@@ -1,4 +1,5 @@
 import vuetify from 'eslint-config-vuetify'
+import prettier from 'eslint-config-prettier'
 import withNuxt from './.nuxt/eslint.config.mjs'
 
 const vuetifyConfigs = await vuetify(
@@ -18,4 +19,6 @@ export default withNuxt({
       config: {},
     },
   },
-}).append(...vuetifyConfigs)
+})
+  .append(...vuetifyConfigs)
+  .append(prettier)
