@@ -4,7 +4,13 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // ssr: false,
-  modules: ['@nuxt/fonts', 'vuetify-nuxt-module', '@nuxt/eslint', '@pinia/nuxt', '@nuxtjs/i18n'],
+  modules: [
+    '@nuxt/fonts',
+    'vuetify-nuxt-module',
+    '@nuxt/eslint',
+    '@pinia/nuxt',
+    '@nuxtjs/i18n',
+  ],
 
   postcss: {
     plugins: {
@@ -30,7 +36,12 @@ export default defineNuxtConfig({
       display: {
         mobileBreakpoint: 'md',
         thresholds: {
-          xs: 0, sm: 600, md: 960, lg: 1280, xl: 1920, xxl: 2560,
+          xs: 0,
+          sm: 600,
+          md: 960,
+          lg: 1280,
+          xl: 1920,
+          xxl: 2560,
         },
       },
     },

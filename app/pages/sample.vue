@@ -1,6 +1,8 @@
 <template>
   <div class="flex-col">
-    <p class="mb-4 bg-blue-500 text-2xl font-bold">Sample Page</p>
+    <p class="mb-4 flex flex-col bg-blue-500 text-2xl font-bold md:text-3xl">
+      Sample Page
+    </p>
 
     <div
       class="m-2 w-1/6 rounded-md border-2 border-black bg-blue-500 p-2 text-black"

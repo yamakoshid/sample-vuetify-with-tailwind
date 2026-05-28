@@ -8,9 +8,7 @@
 
     <v-navigation-drawer v-model="drawer" :temporary="true">
       <v-list nav>
-        <v-list-item link prepend-icon="mdi-home-outline">
-          Home
-        </v-list-item>
+        <v-list-item link prepend-icon="mdi-home-outline"> Home </v-list-item>
 
         <v-list-item link prepend-icon="mdi-file-document-outline">
           Reports
@@ -27,7 +25,6 @@
       <p>V-Main</p>
       <p>V-Main</p>
       <p>V-Main</p>
-
     </v-main>
 
     <v-footer app temporal>
@@ -37,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
+import { ref } from 'vue'
 
-  const drawer = ref(false)
+const drawer = ref(false)
 </script>
