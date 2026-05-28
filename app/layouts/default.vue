@@ -2,10 +2,25 @@
   <div>
     <Disclosure v-slot="{ open }" as="nav" class="relative bg-gray-800">
       <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-        <div class="relative flex h-16 items-center justify-between">
+        <div class="relative flex h-20 items-center justify-between">
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
             <!-- Mobile menu button-->
-            <DisclosureButton class="relative inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-white/5 hover:text-white focus:outline-2 focus:-outline-offset-1 focus:outline-indigo-500">
+            <DisclosureButton
+              class="
+                relative
+                inline-flex
+                items-center
+                justify-center
+                rounded-md
+                p-2
+                text-gray-400
+                hover:bg-white/5
+                hover:text-white
+                focus:outline-2
+                focus:-outline-offset-1
+                focus:outline-indigo-500
+              "
+            >
               <span class="absolute -inset-0.5" />
               <span class="sr-only">Open main menu</span>
               <Bars3Icon v-if="!open" aria-hidden="true" class="block size-6" />
@@ -18,13 +33,14 @@
             </div>
             <div class="hidden sm:ml-6 sm:block">
               <div class="flex space-x-4">
-                <a
+                <button
                   v-for="item in navigation"
                   :key="item.name"
                   :aria-current="item.current ? 'page' : undefined"
                   :class="[item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white', 'rounded-md px-3 py-2 text-sm font-medium']"
-                  :href="item.href"
-                >{{ item.name }}</a>
+                  type="button"
+                  @click="navigateTo(item.href)"
+                >{{ item.name }}</button>
               </div>
             </div>
           </div>
@@ -74,9 +90,10 @@
             v-for="item in navigation"
             :key="item.name"
             :aria-current="item.current ? 'page' : undefined"
-            as="a"
+            as="button"
             :class="[item.current ? 'bg-gray-900 text-white' : 'text-gray-300 hover:bg-white/5 hover:text-white', 'block rounded-md px-3 py-2 text-base font-medium']"
-            :href="item.href"
+            type="button"
+            @click="navigateTo(item.href)"
           >{{ item.name }}</DisclosureButton>
         </div>
       </DisclosurePanel>
@@ -104,14 +121,37 @@
     { name: 'Calendar', href: '/calendar' },
   ]
 
-  const navigation = computed(() =>
-    navigationItems.map(item => ({
-      ...item,
-      current: item.href === route.path,
-    })),
+  const navigation = ref(navigationItems.map(item => ({
+    ...item,
+    current: item.href === route.path,
+  })))
+
+  watch(() => route.path, newPath => {
+          console.log('Route changed to:', newPath)
+          navigation.value = navigationItems.map(item => ({
+            ...item,
+            current: item.href === newPath,
+          }))
+        },
+        { immediate: true },
   )
+  // const navigation = computed(
+  //   () => {
+  //     return navigationItems.map(item => ({
+  //       ...item,
+  //       current: item.href === route.path,
+  //     }))
+  //   },
+  // )
 
   onMounted(() => {
     console.log('Current route:', route.path)
+  })
+
+  onRenderTracked(event => {
+    console.log('Render tracked:', event)
+  })
+  onRenderTriggered(event => {
+    console.log('Render triggered:', event)
   })
 </script>

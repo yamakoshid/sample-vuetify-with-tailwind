@@ -1,5 +1,5 @@
 <template>
-  <v-container class="h-full flex items-center" max-width="900">
+  <v-container class="flex h-full items-center" max-width="900">
     <div>
       <v-img
         alt="Placeholder logo"
@@ -9,11 +9,11 @@
       />
 
       <div class="mb-8 text-center">
-        <div class="font-light -mb-1">Welcome to</div>
-        <h1 class="text-6xl font-heading font-bold">Vuetify</h1>
+        <div class="-mb-1 font-light">Welcome to</div>
+        <h1 class="font-heading text-6xl font-bold">Vuetify</h1>
       </div>
 
-      <div class="grid md:grid-cols-2 gap-4">
+      <div class="grid gap-4 md:grid-cols-2">
         <v-card
           class="hero-card md:col-span-2"
           image="https://cdn.vuetifyjs.com/docs/images/one/create/feature.png"
@@ -21,7 +21,7 @@
           variant="flat"
         >
           <template #prepend>
-            <v-avatar class="ml-2 mr-4" icon="mdi-rocket-launch-outline" size="60" variant="tonal" />
+            <v-avatar class="mr-4 ml-2" icon="mdi-rocket-launch-outline" size="60" variant="tonal" />
           </template>
 
           <template #image>
@@ -29,7 +29,7 @@
           </template>
 
           <template #title>
-            <h2 class="text-2xl font-medium my-0">
+            <h2 class="my-0 text-2xl font-medium">
               Get started
             </h2>
           </template>
@@ -43,23 +43,23 @@
 
         <v-card
           v-for="link in links"
-          :href="link.href"
           :key="link.href"
-          :subtitle="link.subtitle"
-          :title="link.title"
           class="
-            h-full py-3 rounded-3xl transition-[border-radius] hover:rounded-lg
-            flex items-center [&>.v-card-item]:w-full
-            group"
+            group flex h-full items-center rounded-3xl
+            py-3 transition-[border-radius] hover:rounded-lg
+            [&>.v-card-item]:w-full"
+          :href="link.href"
           rel="noopener noreferrer"
+          :subtitle="link.subtitle"
           target="_blank"
+          :title="link.title"
           variant="flat"
         >
           <template #prepend>
-            <v-avatar :icon="link.icon" size="60" variant="tonal" class="ml-2 mr-4" />
+            <v-avatar class="mr-4 ml-2" :icon="link.icon" size="60" variant="tonal" />
           </template>
           <template #append>
-            <v-icon class="ml-1 opacity-0 transition group-hover:opacity-90 group-hover:-translate-x-1" icon="mdi-open-in-new" />
+            <v-icon class="ml-1 opacity-0 transition group-hover:-translate-x-1 group-hover:opacity-90" icon="mdi-open-in-new" />
           </template>
           <template #subtitle>
             <div class="line-clamp-2 text-wrap">{{ link.subtitle }}</div>
