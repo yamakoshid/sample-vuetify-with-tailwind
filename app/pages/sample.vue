@@ -65,6 +65,15 @@ function removeLastItem() {
           :items="items"
           :items-per-page="-1"
         >
+          <template #item.action="{ item, index }">
+            <button
+              v-if="index === items.length - 1"
+              class="rounded border-2 border-dashed border-blue-500 bg-white p-2 font-bold text-blue-500 hover:active:bg-blue-200 hover:active:text-gray-600"
+              @click="addItem"
+            >
+              add Item
+            </button>
+          </template>
         </v-data-table>
 
         <button
