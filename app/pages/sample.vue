@@ -18,10 +18,14 @@ const items = ref([
   },
 ])
 
+const tableRef = useTemplateRef('tableRef')
+
 // スクロール処理を共通化
 async function scrollToBottom() {
   await nextTick()
-  const tableWrapper = document.querySelector('#custom-table .v-table__wrapper')
+  // const tableWrapper = document.querySelector('#custom-table .v-table__wrapper')
+  const tableWrapper = tableRef.value?.$el
+    .firstElementChild as HTMLElement | null
   if (tableWrapper) {
     tableWrapper.scrollTo({
       top: tableWrapper.scrollHeight,
@@ -55,6 +59,7 @@ async function removeLastItem() {
       <div class="flex max-h-full min-h-0 flex-col">
         <v-data-table
           id="custom-table"
+          ref="tableRef"
           class="custom-scrollbar-table max-h-full min-h-0"
           density="compact"
           :fixed-header="true"
@@ -101,3 +106,29 @@ async function removeLastItem() {
     </div>
   </div>
 </template>
+<style scoped>
+/* 1. テーブルのインナースクロール領域を確実に捕捉してスクロールバーを強制 */
+.custom-scrollbar-table :deep(.v-table__wrapper) {
+  overflow-y: scroll !important;
+  display: block !important;
+}
+
+/* 2. 【重要】ブラウザによっては中身（テーブル本体）の高さが足りないとバーが薄くなるのを防ぐ */
+.custom-scrollbar-table :deep(.v-table__wrapper table) {
+  min-height: calc(100% + 1px) !important;
+}
+
+/* 3. （オプション）スクロールバーのデザインを常に表示されるように固定（Mac/Windows両対応） */
+.custom-scrollbar-table :deep(.v-table__wrapper)::-webkit-scrollbar {
+  width: 8px;
+  background: #f1f1f1;
+}
+.custom-scrollbar-table :deep(.v-table__wrapper)::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+.custom-scrollbar-table
+  :deep(.v-table__wrapper)::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+</style>
