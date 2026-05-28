@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <v-app>
     <Disclosure v-slot="{ open }" as="nav" class="relative bg-gray-800">
       <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div class="relative flex h-20 items-center justify-between">
@@ -138,12 +138,11 @@
         </div>
       </DisclosurePanel>
     </Disclosure>
-    <v-app>
-      <v-main>
-        <slot />
-      </v-main>
-    </v-app>
-  </div>
+
+    <v-main>
+      <slot />
+    </v-main>
+  </v-app>
 </template>
 
 <script setup>
@@ -157,7 +156,6 @@ import {
   MenuItems,
 } from '@headlessui/vue'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
-import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
