@@ -1,5 +1,11 @@
 <script setup lang="ts">
-const items = [
+const items = ref([
+  {
+    name: 'African Elephant',
+    species: 'Loxodonta africana',
+    diet: 'Herbivore',
+    habitat: 'Savanna, Forests',
+  },
   {
     name: 'African Elephant',
     species: 'Loxodonta africana',
@@ -7,65 +13,82 @@ const items = [
     habitat: 'Savanna, Forests',
   },
   // ... more items
-]
+])
+function addItem() {
+  items.value.push({
+    name: 'African Elephant',
+    species: 'Loxodonta africana',
+    diet: 'Herbivore',
+    habitat: 'Savanna, Forests',
+  })
+}
+
+function removeLastItem() {
+  items.value.pop()
+}
 </script>
 <template>
   <div class="flex-col">
-    <p class="mb-4 flex flex-col bg-blue-500 text-2xl font-bold md:text-3xl">
-      Sample Page
-    </p>
+    <div class="flex h-[50dvh] flex-col justify-start">
+      <v-data-table
+        class="max-h-full min-h-0"
+        density="compact"
+        :fixed-header="true"
+        :headers="[
+          { title: 'Name', value: 'name' },
+          { title: 'Species', value: 'species' },
+          { title: 'Diet', value: 'diet' },
+          { title: 'Habitat', value: 'habitat' },
+          { title: '', value: 'action', width: '100px' },
+        ]"
+        :hide-default-footer="true"
+        :items="items"
+        :items-per-page="-1"
+      >
+        <template #item.action="{ item }">
+          <!-- 最終行だけ追加ボタンを表示する -->
+          <button
+            v-if="item === items[items.length - 1]"
+            class="rounded border-2 border-dashed border-blue-500 bg-white p-2 font-bold text-blue-500 hover:active:bg-blue-200 hover:active:text-gray-600"
+            @click="addItem"
+          >
+            add Item
+          </button>
+        </template>
+      </v-data-table>
 
-    <div class="ga-2 flex flex-row">
-      <div class="flex justify-center rounded-md bg-blue-500 p-4 text-white" />
-      <div class="flex w-1/2 flex-col">
-        <p>sample</p>
-        <p>sample</p>
-        <p>sample</p>
-      </div>
-      <p>sample</p>
-      <p>sample</p>
-      <p>sample</p>
+      <button
+        class="mb-2 rounded border-2 border-dashed border-blue-500 bg-white p-2 font-bold text-blue-500 hover:bg-blue-200 hover:text-gray-600"
+        @click="addItem"
+      >
+        add Item
+      </button>
+      <button
+        class="rounded bg-red-500 p-2 text-white hover:bg-red-600 hover:text-gray-200"
+        @click="removeLastItem"
+      >
+        remove Item
+      </button>
     </div>
 
-    <v-data-table :items="items"></v-data-table>
-
-    <!-- tailwindcssのソート順
-      https://zenn.dev/yamap_web/articles/0a8ad8d731eec8
-    -->
-    <div class="ga-2 align-center flex flex-col justify-between">
-      <p class="text-xs">sample xs</p>
-      <p class="text-sm">sample sm</p>
-      <p class="text-base">sample base</p>
-      <p class="text-lg">sample lg</p>
-      <p class="text-xl">sample xl</p>
-      <p class="text-2xl">sample 2xl</p>
-      <p class="text-3xl">sample 3xl</p>
-      <p class="text-4xl">sample 4xl</p>
-      <p class="text-5xl">sample 5xl</p>
-      <p class="text-6xl">sample 6xl</p>
-      <p class="text-7xl">sample 7xl</p>
-      <p class="text-8xl">sample 8xl</p>
-      <p class="text-9xl">sample 9xl</p>
-      <p class="text-9xl">sample 9xl</p>
-      <p class="text-9xl">sample 9xl</p>
-      <p class="text-9xl">sample 9xl</p>
-      <p class="text-9xl">sample 9xl</p>
-      <p class="text-9xl">sample 9xl</p>
-      <p class="text-9xl">sample 9xl</p>
-      <p class="text-9xl">sample 9xl</p>
-    </div>
-
-    <div
-      class="w-1/6 rounded border-2 border-black bg-blue-500 p-2 text-lg text-white"
-    >
-      Hello
-    </div>
-    <p>Hello</p>
-    <div class="w-1/2">
-      <p>Left</p>
-    </div>
-    <div class="w-1/2">
-      <p>Right</p>
+    <div class="flex flex-col">
+      <button>末端</button>
     </div>
   </div>
 </template>
+<!-- <style scoped>
+/* 1. テーブル全体の高さを「中身に合わせる（auto）」にしつつ、最大値を制限する */
+.custom-table {
+  height: auto !important;
+  max-height: 100% !important; /* 親要素の高さ（50dvhなど）を超えないようにする */
+  display: flex;
+  flex-direction: column;
+}
+
+/* 2. 内部のラッパーも連動して縮むようにする */
+.custom-table :deep(.v-table__wrapper) {
+  height: auto !important;
+  max-height: 100% !important;
+  flex-grow: 0 !important; /* 勝手に広がろうとするのを阻止 */
+}
+</style> -->
