@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
 
-// 1. 各データに識別用の id を持たせる
 const items = ref([
   {
     id: 1,
@@ -19,17 +18,9 @@ const items = ref([
   },
 ])
 
-async function addItem() {
-  items.value.push({
-    id: Date.now(), // 簡易的なユニークID
-    name: 'African Elephant',
-    species: 'Loxodonta africana',
-    diet: 'Herbivore',
-    habitat: 'Savanna, Forests',
-  })
-
+// スクロール処理を共通化
+async function scrollToBottom() {
   await nextTick()
-
   const tableWrapper = document.querySelector('#custom-table .v-table__wrapper')
   if (tableWrapper) {
     tableWrapper.scrollTo({
@@ -39,8 +30,22 @@ async function addItem() {
   }
 }
 
-function removeLastItem() {
+async function addItem() {
+  items.value.push({
+    id: Date.now(),
+    name: 'African Elephant',
+    species: 'Loxodonta africana',
+    diet: 'Herbivore',
+    habitat: 'Savanna, Forests',
+  })
+  // 追加後にスクロール
+  await scrollToBottom()
+}
+
+async function removeLastItem() {
   items.value.pop()
+  // 💡 削除後も同じようにスクロール（最下部へ追従）
+  await scrollToBottom()
 }
 </script>
 
@@ -50,7 +55,7 @@ function removeLastItem() {
       <div class="flex max-h-full min-h-0 flex-col">
         <v-data-table
           id="custom-table"
-          class="max-h-full min-h-0"
+          class="custom-scrollbar-table max-h-full min-h-0"
           density="compact"
           :fixed-header="true"
           :headers="[
