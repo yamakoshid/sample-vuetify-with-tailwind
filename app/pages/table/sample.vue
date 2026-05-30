@@ -55,7 +55,7 @@ async function removeLastItem() {
 
 <template>
   <div class="flex-col">
-    <div class="flex h-[50dvh] flex-col justify-start">
+    <div class="flex h-[33dvh] flex-col justify-start">
       <div class="flex max-h-full min-h-0 flex-col">
         <v-data-table
           id="custom-table"
@@ -87,7 +87,7 @@ async function removeLastItem() {
         </v-data-table>
 
         <button
-          class="mb-2 rounded border-2 border-dashed border-blue-500 bg-white p-2 font-bold text-blue-500 hover:bg-blue-200 hover:text-gray-600 active:bg-blue-400"
+          class="mb-2 self-start rounded border-2 border-dashed border-blue-500 bg-white p-2 font-bold text-blue-500 hover:bg-blue-200 hover:text-blue-950 active:bg-blue-400"
           @click="addItem"
         >
           add Item
@@ -100,10 +100,11 @@ async function removeLastItem() {
         </button>
       </div>
     </div>
-
     <div class="flex flex-col">
       <button>末端</button>
     </div>
+
+    <div></div>
   </div>
 </template>
 <style scoped>

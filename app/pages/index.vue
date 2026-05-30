@@ -1,5 +1,5 @@
 <template>
-  <v-card class="p-4" elevation="2">
+  <v-card class="p-4" variant="outlined">
     <v-card-title>Welcome to the Dashboard</v-card-title>
     <v-card-text>
       This layout includes a Vuetify app bar, navigation drawer, main content
@@ -13,8 +13,7 @@
       <v-col cols="0">
         <p>Hello cols</p>
       </v-col>
-
-      <v-col cols="12" md="4">
+      <v-col cols="1" md="4">
         <v-card class="p-4" elevation="2">
           <v-card-title>Quick Links</v-card-title>
           <v-list>
@@ -31,57 +30,4 @@
       </v-col>
     </v-row>
   </v-container>
-
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
-  <p>Hello</p>
 </template>
