@@ -1,18 +1,22 @@
 <template>
-  <p class="mb-4 flex flex-col bg-blue-500 text-2xl font-bold md:text-3xl">
-    Sample Page
-  </p>
+  <header class="mb-4 flex flex-col bg-blue-500 text-2xl font-bold md:text-3xl">
+    ヘッダーもどき(mb-4)
+  </header>
 
   <div class="ga-2 flex flex-row">
-    <div class="flex justify-center rounded-md bg-blue-500 p-4 text-white" />
-    <div class="flex w-1/2 flex-col">
-      <p>sample</p>
-      <p>sample</p>
-      <p>sample</p>
+    <div class="flex justify-center rounded-md bg-blue-500 p-4 text-white">
+      p-4
     </div>
-    <p>sample</p>
-    <p>sample</p>
-    <p>sample</p>
+    <div class="w-1/2 border">
+      <p>width 50%</p>
+    </div>
+    <div class="min-w-0 border">sample</div>
+    <div class="border">sample</div>
+    <div class="border">sample</div>
+    <div class="border">sample</div>
+    <div class="border">sample</div>
+    <div class="border">sample</div>
+    <div class="border">sample</div>
   </div>
   <!-- tailwindcssのソート順
       https://zenn.dev/yamap_web/articles/0a8ad8d731eec8

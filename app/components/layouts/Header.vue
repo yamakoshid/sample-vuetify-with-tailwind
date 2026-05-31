@@ -1,7 +1,7 @@
 <template>
   <Disclosure v-slot="{ open }" as="nav" class="relative bg-gray-800">
     <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-      <div class="relative flex h-16 items-center justify-between">
+      <div class="relative flex h-20 items-center justify-between">
         <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
           <!-- Mobile menu button-->
           <DisclosureButton
@@ -25,7 +25,7 @@
           </div>
           <div class="hidden sm:ml-6 sm:block">
             <div class="flex space-x-4">
-              <a
+              <button
                 v-for="item in navigation"
                 :key="item.name"
                 :aria-current="item.current ? 'page' : undefined"
@@ -35,9 +35,11 @@
                     : 'text-gray-300 hover:bg-white/5 hover:text-white',
                   'rounded-md px-3 py-2 text-sm font-medium',
                 ]"
-                :href="item.href"
-                >{{ item.name }}</a
+                type="button"
+                @click="navigateTo(item.href)"
               >
+                {{ item.name }}
+              </button>
             </div>
           </div>
         </div>
@@ -121,14 +123,15 @@
           v-for="item in navigation"
           :key="item.name"
           :aria-current="item.current ? 'page' : undefined"
-          as="a"
+          as="button"
           :class="[
             item.current
               ? 'bg-gray-900 text-white'
               : 'text-gray-300 hover:bg-white/5 hover:text-white',
             'block rounded-md px-3 py-2 text-base font-medium',
           ]"
-          :href="item.href"
+          type="button"
+          @click="navigateTo(item.href)"
           >{{ item.name }}</DisclosureButton
         >
       </div>
@@ -148,10 +151,26 @@ import {
 } from '@headlessui/vue'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', current: true },
-  { name: 'Team', href: '/team', current: false },
-  { name: 'Projects', href: '/projects', current: false },
-  { name: 'Calendar', href: '/calendar', current: false },
-]
+const route = useRoute()
+
+const navigationItems = [{ name: 'Home', href: '/' }]
+
+const navigation = ref(
+  navigationItems.map((item) => ({
+    ...item,
+    current: item.href === route.path,
+  })),
+)
+
+watch(
+  () => route.path,
+  (newPath) => {
+    console.log('Route changed to:', newPath)
+    navigation.value = navigationItems.map((item) => ({
+      ...item,
+      current: item.href === newPath,
+    }))
+  },
+  { immediate: true },
+)
 </script>
