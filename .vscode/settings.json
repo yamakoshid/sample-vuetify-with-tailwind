@@ -10,11 +10,11 @@
   },
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.fixAll.eslint": "explicit"
-    }
+    "editor.formatOnSave": true
+    // "editor.codeActionsOnSave": {
+    //   "source.fixAll": "explicit",
+    //   "source.fixAll.eslint": "explicit"
+    // }
   },
   "[json]": {
     "editor.quickSuggestions": {

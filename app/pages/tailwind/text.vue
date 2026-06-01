@@ -13,5 +13,17 @@
     <p class="text-7xl">sample 7xl</p>
     <p class="text-8xl">sample 8xl</p>
     <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
+    <p class="text-9xl">sample 9xl</p>
   </div>
 </template>
