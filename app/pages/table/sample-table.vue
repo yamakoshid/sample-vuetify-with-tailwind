@@ -56,40 +56,38 @@ async function removeLastItem() {
 <template>
   <div class="flex-col">
     <div class="flex h-[33dvh] flex-col justify-start">
-      <div class="items-strech flex max-h-full flex-row">
-        <v-data-table
-          id="custom-table"
-          ref="tableRef"
-          class="h-full"
-          density="compact"
-          :fixed-header="true"
-          :headers="[
-            { title: 'Name', value: 'name' },
-            { title: 'Species', value: 'species' },
-            { title: 'Diet', value: 'diet' },
-            { title: 'Habitat', value: 'habitat' },
-            { title: '', value: 'action', width: '100px' },
-          ]"
-          :hide-default-footer="true"
-          item-value="id"
-          :items="items"
-          :items-per-page="-1"
-        >
-        </v-data-table>
+      <v-data-table
+        id="custom-table"
+        ref="tableRef"
+        density="compact"
+        :fixed-header="true"
+        :headers="[
+          { title: 'Name', value: 'name' },
+          { title: 'Species', value: 'species' },
+          { title: 'Diet', value: 'diet' },
+          { title: 'Habitat', value: 'habitat' },
+          { title: '', value: 'action', width: '100px' },
+        ]"
+        :height="'300px'"
+        :hide-default-footer="true"
+        item-value="id"
+        :items="items"
+        :items-per-page="-1"
+      >
+      </v-data-table>
 
-        <button
-          class="align-self-end rounded border-2 border-dashed border-blue-500 bg-white p-2 font-bold text-blue-500 hover:bg-blue-200 hover:text-blue-950 active:bg-blue-400"
-          @click="addItem"
-        >
-          add Item
-        </button>
-        <button
-          class="align-self-end rounded border-2 border-solid border-black bg-red-500 p-2 text-white hover:bg-red-600 hover:text-gray-200"
-          @click="removeLastItem"
-        >
-          remove Item
-        </button>
-      </div>
+      <button
+        class="rounded border-2 border-dashed border-blue-500 bg-white p-2 font-bold text-blue-500 hover:bg-blue-200 hover:text-blue-950 active:bg-blue-400"
+        @click="addItem"
+      >
+        add Item
+      </button>
+      <button
+        class="align-self-end rounded border-2 border-solid border-black bg-red-500 p-2 text-white hover:bg-red-600 hover:text-gray-200"
+        @click="removeLastItem"
+      >
+        remove Item
+      </button>
     </div>
     <div class="flex flex-col">
       <button>末端</button>
