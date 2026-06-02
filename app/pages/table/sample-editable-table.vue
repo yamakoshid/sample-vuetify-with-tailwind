@@ -1,203 +1,213 @@
 <template>
   <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <h1>ユーザー管理</h1>
-      <p>変更はすべてまとめて一括送信されます</p>
-    </div>
-    <div class="badge-row">
-      <span class="badge badge-blue" v-if="stats.total">
-        <span class="dot"></span>{{ stats.total }} 件
-      </span>
-      <span class="badge badge-green" v-if="stats.added">
-        <span class="dot"></span>追加 {{ stats.added }}
-      </span>
-      <span class="badge badge-amber" v-if="stats.edited">
-        <span class="dot"></span>編集 {{ stats.edited }}
-      </span>
-      <span class="badge badge-red" v-if="stats.deleted">
-        <span class="dot"></span>削除 {{ stats.deleted }}
-      </span>
-    </div>
-  </div>
-
-  <!-- Table card -->
-  <div class="table-card">
-    <!-- Toolbar -->
-    <div class="table-toolbar">
-      <span style="color: var(--text-muted); font-size: 13px">
-        セルをクリックして直接編集できます
-      </span>
-      <button class="btn btn-ghost" @click="addRow">
-        ＋ 新規ユーザーを追加
-      </button>
+  <div class="app">
+    <div class="header">
+      <div class="header-left">
+        <h1>ユーザー管理</h1>
+        <p>変更はすべてまとめて一括送信されます</p>
+      </div>
+      <div class="badge-row">
+        <span class="badge badge-blue" v-if="stats.total">
+          <span class="dot"></span>{{ stats.total }} 件
+        </span>
+        <span class="badge badge-green" v-if="stats.added">
+          <span class="dot"></span>追加 {{ stats.added }}
+        </span>
+        <span class="badge badge-amber" v-if="stats.edited">
+          <span class="dot"></span>編集 {{ stats.edited }}
+        </span>
+        <span class="badge badge-red" v-if="stats.deleted">
+          <span class="dot"></span>削除 {{ stats.deleted }}
+        </span>
+      </div>
     </div>
 
-    <!-- Table -->
-    <div class="table-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>ユーザーID</th>
-            <th>ユーザー名</th>
-            <th>メールアドレス</th>
-            <th>住所</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <template v-if="rows.length === 0">
-            <tr class="empty-row">
-              <td colspan="6">
-                ユーザーがいません。「新規ユーザーを追加」から追加してください。
-              </td>
+    <!-- Table card -->
+    <div class="table-card">
+      <!-- Toolbar -->
+      <div class="table-toolbar">
+        <span style="color: var(--text-muted); font-size: 13px">
+          セルをクリックして直接編集できます
+        </span>
+        <button class="btn btn-ghost" @click="addRow">
+          ＋ 新規ユーザーを追加
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ユーザーID</th>
+              <th>ユーザー名</th>
+              <th>メールアドレス</th>
+              <th>住所</th>
+              <th>操作</th>
             </tr>
-          </template>
-          <template v-else>
-            <tr
-              v-for="(row, i) in rows"
-              :key="row._id"
-              :class="{
-                'row-new': row._state === 'new',
-                'row-edited': row._state === 'edited',
-                'row-deleted': row._state === 'deleted',
-              }"
-            >
-              <!-- # -->
-              <td>
-                <span class="row-num">
-                  {{ row._state === 'new' ? '✦' : i + 1 }}
-                </span>
-              </td>
+          </thead>
+          <tbody>
+            <template v-if="rows.length === 0">
+              <tr class="empty-row">
+                <td colspan="6">
+                  ユーザーがいません。「新規ユーザーを追加」から追加してください。
+                </td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr
+                v-for="(row, i) in rows"
+                :key="row._id"
+                :class="{
+                  'row-new': row._state === 'new',
+                  'row-edited': row._state === 'edited',
+                  'row-deleted': row._state === 'deleted',
+                }"
+              >
+                <!-- # -->
+                <td>
+                  <span class="row-num">
+                    {{ row._state === 'new' ? '✦' : i + 1 }}
+                  </span>
+                </td>
 
-              <!-- userId -->
-              <td>
-                <template v-if="row._state === 'new'">
+                <!-- userId -->
+                <td>
+                  <template v-if="row._state === 'new'">
+                    <input
+                      class="cell-input"
+                      :class="{ 'has-error': errors[row._id]?.userId }"
+                      v-model="row.userId"
+                      placeholder="例: U-1234"
+                      style="font-family: var(--font-mono); font-size: 13px"
+                    />
+                    <div class="error-tip" v-if="errors[row._id]?.userId">
+                      {{ errors[row._id].userId }}
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span
+                      class="row-num"
+                      style="font-size: 12px; color: var(--text-muted)"
+                    >
+                      {{ row.userId }}
+                    </span>
+                  </template>
+                </td>
+
+                <!-- Name -->
+                <td>
                   <input
                     class="cell-input"
-                    :class="{ 'has-error': errors[row._id]?.userId }"
-                    v-model="row.userId"
-                    placeholder="例: U-1234"
-                    style="font-family: var(--font-mono); font-size: 13px"
+                    :class="{ 'has-error': errors[row._id]?.name }"
+                    v-model="row.name"
+                    placeholder="名前"
+                    :readonly="row._state === 'deleted'"
+                    @input="markEdited(row)"
                   />
-                  <div class="error-tip" v-if="errors[row._id]?.userId">
-                    {{ errors[row._id].userId }}
+                  <div class="error-tip" v-if="errors[row._id]?.name">
+                    {{ errors[row._id].name }}
                   </div>
-                </template>
-                <template v-else>
-                  <span
-                    class="row-num"
-                    style="font-size: 12px; color: var(--text-muted)"
-                  >
-                    {{ row.userId }}
-                  </span>
-                </template>
-              </td>
+                </td>
 
-              <!-- Name -->
-              <td>
-                <input
-                  class="cell-input"
-                  :class="{ 'has-error': errors[row._id]?.name }"
-                  v-model="row.name"
-                  placeholder="名前"
-                  :readonly="row._state === 'deleted'"
-                  @input="markEdited(row)"
-                />
-                <div class="error-tip" v-if="errors[row._id]?.name">
-                  {{ errors[row._id].name }}
-                </div>
-              </td>
+                <!-- Email -->
+                <td class="cell-email">
+                  <input
+                    class="cell-input"
+                    :class="{ 'has-error': errors[row._id]?.email }"
+                    v-model="row.email"
+                    placeholder="example@mail.com"
+                    :readonly="row._state === 'deleted'"
+                    @input="markEdited(row)"
+                  />
+                  <div class="error-tip" v-if="errors[row._id]?.email">
+                    {{ errors[row._id].email }}
+                  </div>
+                </td>
 
-              <!-- Email -->
-              <td class="cell-email">
-                <input
-                  class="cell-input"
-                  :class="{ 'has-error': errors[row._id]?.email }"
-                  v-model="row.email"
-                  placeholder="example@mail.com"
-                  :readonly="row._state === 'deleted'"
-                  @input="markEdited(row)"
-                />
-                <div class="error-tip" v-if="errors[row._id]?.email">
-                  {{ errors[row._id].email }}
-                </div>
-              </td>
+                <!-- Address -->
+                <td>
+                  <input
+                    class="cell-input"
+                    v-model="row.address"
+                    placeholder="住所"
+                    :readonly="row._state === 'deleted'"
+                    @input="markEdited(row)"
+                  />
+                </td>
 
-              <!-- Address -->
-              <td>
-                <input
-                  class="cell-input"
-                  v-model="row.address"
-                  placeholder="住所"
-                  :readonly="row._state === 'deleted'"
-                  @input="markEdited(row)"
-                />
-              </td>
+                <!-- Actions -->
+                <td>
+                  <div class="actions">
+                    <button
+                      v-if="row._state !== 'deleted' && row._state !== 'edited'"
+                      class="btn btn-danger-ghost"
+                      @click="deleteRow(row)"
+                      title="削除"
+                    >
+                      削除
+                    </button>
+                    <button
+                      v-if="row._state === 'deleted' || row._state === 'edited'"
+                      class="btn btn-undo"
+                      @click="undoRow(row)"
+                      title="元に戻す"
+                    >
+                      ↩ 元に戻す
+                    </button>
+                    <button
+                      v-if="row._state === 'new' && false"
+                      class="btn btn-undo"
+                      @click="removeNewRow(row)"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
 
-              <!-- Actions -->
-              <td>
-                <div class="actions">
-                  <button
-                    v-if="row._state !== 'deleted' && row._state !== 'edited'"
-                    class="btn btn-danger-ghost"
-                    @click="deleteRow(row)"
-                    title="削除"
-                  >
-                    削除
-                  </button>
-                  <button
-                    v-if="row._state === 'deleted' || row._state === 'edited'"
-                    class="btn btn-undo"
-                    @click="undoRow(row)"
-                    title="元に戻す"
-                  >
-                    ↩ 元に戻す
-                  </button>
-                  <button
-                    v-if="row._state === 'new' && false"
-                    class="btn btn-undo"
-                    @click="removeNewRow(row)"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </td>
-            </tr>
+      <!-- Footer -->
+      <div class="table-footer">
+        <span class="footer-info">
+          <template v-if="hasChanges">
+            変更あり：
+            <template v-if="stats.added">追加 {{ stats.added }} 件　</template>
+            <template v-if="stats.edited"
+              >編集 {{ stats.edited }} 件　</template
+            >
+            <template v-if="stats.deleted"
+              >削除 {{ stats.deleted }} 件</template
+            >
           </template>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Footer -->
-    <div class="table-footer">
-      <span class="footer-info">
-        <template v-if="hasChanges">
-          変更あり：
-          <template v-if="stats.added">追加 {{ stats.added }} 件　</template>
-          <template v-if="stats.edited">編集 {{ stats.edited }} 件　</template>
-          <template v-if="stats.deleted">削除 {{ stats.deleted }} 件</template>
-        </template>
-        <template v-else>変更なし</template>
-      </span>
-      <div style="display: flex; gap: 8px">
-        <button class="btn btn-ghost" :disabled="!hasChanges" @click="resetAll">
-          すべてリセット
-        </button>
-        <button
-          class="btn btn-primary"
-          :disabled="!hasChanges"
-          @click="submitAll"
-        >
-          <span v-if="submitting">送信中…</span>
-          <span v-else
-            >変更を保存
-            <template v-if="changeCount > 0"
-              >({{ changeCount }} 件)</template
-            ></span
+          <template v-else>変更なし</template>
+        </span>
+        <div style="display: flex; gap: 8px">
+          <button
+            class="btn btn-ghost"
+            :disabled="!hasChanges"
+            @click="resetAll"
           >
-        </button>
+            すべてリセット
+          </button>
+          <button
+            class="btn btn-primary"
+            :disabled="!hasChanges"
+            @click="submitAll"
+          >
+            <span v-if="submitting">送信中…</span>
+            <span v-else
+              >変更を保存
+              <template v-if="changeCount > 0"
+                >({{ changeCount }} 件)</template
+              ></span
+            >
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -500,7 +510,7 @@ const showToast = (icon, msg) => {
   }, 3000)
 }
 </script>
-<style>
+<style scoped>
 *,
 *::before,
 *::after {
@@ -509,7 +519,8 @@ const showToast = (icon, msg) => {
   padding: 0;
 }
 
-:root {
+/* ─── Layout ─── */
+.app {
   --bg: #0f1117;
   --surface: #181c27;
   --surface2: #1f2435;
@@ -527,19 +538,14 @@ const showToast = (icon, msg) => {
   --red-soft: #f8717120;
   --radius: 8px;
   --font-mono: 'JetBrains Mono', monospace;
-}
 
-body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Noto Sans JP', sans-serif;
   font-size: 14px;
   min-height: 100vh;
   padding: 40px 24px;
-}
 
-/* ─── Layout ─── */
-.app {
   max-width: 960px;
   margin: 0 auto;
 }
