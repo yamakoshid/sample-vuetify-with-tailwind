@@ -28,11 +28,16 @@ const headers = [
   { title: 'メールアドレス', key: 'email' },
 ]
 
-const users = ref([
-  { id: 1, name: '田中 太郎', email: 'tanaka@example.com' },
-  { id: 2, name: '鈴木 一郎', email: 'suzuki@example.com' },
-  { id: 3, name: '佐藤 花子', email: 'sato@example.com' },
-])
+const array = []
+for (let i = 0; i < 1000; i++) {
+  array.push({
+    id: i + 1,
+    name: `佐藤 花子${i + 1}`,
+    email: `sato${i + 1}@example.com`,
+  })
+}
+
+const users = ref(array)
 
 // 各行の v-text-field インスタンスを ID キーで保持するオブジェクト
 const inputRefs = {}
