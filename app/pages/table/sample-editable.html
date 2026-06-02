@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ユーザー管理</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0f1117;
+    --surface:   #181c27;
+    --surface2:  #1f2435;
+    --border:    #2a2f42;
+    --border2:   #353b52;
+    --text:      #e2e8f0;
+    --text-muted:#7a849e;
+    --accent:    #5b8dee;
+    --accent-soft:#5b8dee22;
+    --green:     #34d399;
+    --green-soft:#34d39922;
+    --amber:     #fbbf24;
+    --amber-soft:#fbbf2420;
+    --red:       #f87171;
+    --red-soft:  #f8717120;
+    --radius:    8px;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 40px 24px;
+  }
+
+  /* ─── Layout ─── */
+  .app { max-width: 960px; margin: 0 auto; }
+
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .header-left p {
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* ─── Badges ─── */
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 100px; font-size: 12px; font-weight: 500;
+  }
+  .badge-blue  { background: var(--accent-soft); color: var(--accent); border: 1px solid #5b8dee44; }
+  .badge-green { background: var(--green-soft);  color: var(--green);  border: 1px solid #34d39944; }
+  .badge-amber { background: var(--amber-soft);  color: var(--amber);  border: 1px solid #fbbf2444; }
+  .badge-red   { background: var(--red-soft);    color: var(--red);    border: 1px solid #f8717144; }
+  .badge .dot  { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* ─── Buttons ─── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius); border: none;
+    font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: all .15s ease; white-space: nowrap;
+  }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-primary {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 0 0 0 #5b8dee44;
+  }
+  .btn-primary:not(:disabled):hover {
+    background: #7aa4f4;
+    box-shadow: 0 0 16px 0 #5b8dee55;
+    transform: translateY(-1px);
+  }
+  .btn-primary:not(:disabled):active { transform: translateY(0); }
+
+  .btn-ghost {
+    background: transparent; color: var(--text-muted);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+  .btn-danger-ghost {
+    background: transparent; color: var(--red);
+    border: 1px solid transparent;
+    padding: 4px 8px; font-size: 12px;
+  }
+  .btn-danger-ghost:hover { background: var(--red-soft); border-color: #f8717144; }
+
+  .btn-undo {
+    background: transparent; color: var(--amber);
+    border: 1px solid transparent;
+    padding: 4px 8px; font-size: 12px;
+  }
+  .btn-undo:hover { background: var(--amber-soft); }
+
+  /* ─── Table card ─── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .table-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px; flex-wrap: wrap;
+  }
+
+  /* ─── Table ─── */
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    text-align: left; font-size: 11px; font-weight: 600;
+    letter-spacing: .8px; text-transform: uppercase; color: var(--text-muted);
+    white-space: nowrap;
+  }
+  thead th:first-child { width: 36px; padding-left: 20px; }
+  thead th:last-child  { width: 120px; text-align: center; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .12s;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  /* row states */
+  tbody tr.row-new    { background: var(--green-soft); }
+  tbody tr.row-new:hover { background: #34d39930; }
+  tbody tr.row-edited { background: var(--amber-soft); }
+  tbody tr.row-edited:hover { background: #fbbf2430; }
+  tbody tr.row-deleted {
+    background: var(--red-soft);
+    opacity: .65;
+  }
+
+  td { padding: 10px 14px; vertical-align: middle; }
+  td:first-child { padding-left: 20px; }
+
+  /* ─── Inline input ─── */
+  .cell-input {
+    width: 100%; background: transparent; border: none; outline: none;
+    color: var(--text); font-family: inherit; font-size: 14px;
+    padding: 4px 6px; border-radius: 4px;
+    transition: background .15s, box-shadow .15s;
+  }
+  .cell-input:focus {
+    background: var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .cell-input:read-only { cursor: default; }
+
+  /* deleted row text */
+  .row-deleted .cell-input {
+    text-decoration: line-through;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+
+  /* email mono */
+  .cell-email .cell-input { font-family: var(--font-mono); font-size: 13px; }
+
+  /* ─── Row number ─── */
+  .row-num {
+    font-family: var(--font-mono);
+    font-size: 11px; color: var(--text-muted);
+    user-select: none;
+  }
+  .row-new .row-num { color: var(--green); }
+
+  /* ─── Actions ─── */
+  .actions { display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+  /* ─── Status indicator strip ─── */
+  .row-new    > td:first-child { border-left: 3px solid var(--green);  }
+  .row-edited > td:first-child { border-left: 3px solid var(--amber);  }
+  .row-deleted> td:first-child { border-left: 3px solid var(--red);    }
+
+  /* ─── Footer ─── */
+  .table-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    background: var(--surface2);
+  }
+  .footer-info { color: var(--text-muted); font-size: 13px; }
+
+  /* ─── Toast ─── */
+  .toast-wrap {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    z-index: 100; pointer-events: none;
+  }
+  .toast {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 32px #00000080;
+    animation: slideUp .25s ease;
+    pointer-events: auto;
+  }
+  .toast-icon { font-size: 18px; }
+  .toast-msg  { font-size: 13px; color: var(--text); }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Empty ─── */
+  .empty-row td {
+    text-align: center; padding: 40px;
+    color: var(--text-muted); font-size: 13px;
+  }
+
+  /* ─── Scrollable on small screens ─── */
+  .table-scroll { overflow-x: auto; }
+
+  /* ─── Validation error ─── */
+  .cell-input.has-error { box-shadow: 0 0 0 2px var(--red); background: var(--red-soft); }
+  .error-tip { font-size: 11px; color: var(--red); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="app">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h1>ユーザー管理</h1>
+        <p>変更はすべてまとめて一括送信されます</p>
+      </div>
+      <div class="badge-row">
+        <span class="badge badge-blue"  v-if="stats.total">
+          <span class="dot"></span>{{ stats.total }} 件
+        </span>
+        <span class="badge badge-green"  v-if="stats.added">
+          <span class="dot"></span>追加 {{ stats.added }}
+        </span>
+        <span class="badge badge-amber" v-if="stats.edited">
+          <span class="dot"></span>編集 {{ stats.edited }}
+        </span>
+        <span class="badge badge-red"   v-if="stats.deleted">
+          <span class="dot"></span>削除 {{ stats.deleted }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Table card -->
+    <div class="table-card">
+      <!-- Toolbar -->
+      <div class="table-toolbar">
+        <span style="color:var(--text-muted);font-size:13px;">
+          セルをクリックして直接編集できます
+        </span>
+        <button class="btn btn-ghost" @click="addRow">
+          ＋ 新規ユーザーを追加
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>ユーザーID</th>
+              <th>ユーザー名</th>
+              <th>メールアドレス</th>
+              <th>住所</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-if="rows.length === 0">
+              <tr class="empty-row">
+                <td colspan="6">ユーザーがいません。「新規ユーザーを追加」から追加してください。</td>
+              </tr>
+            </template>
+            <template v-else>
+              <tr
+                v-for="(row, i) in rows"
+                :key="row._id"
+                :class="{
+                  'row-new':     row._state === 'new',
+                  'row-edited':  row._state === 'edited',
+                  'row-deleted': row._state === 'deleted',
+                }"
+              >
+                <!-- # -->
+                <td>
+                  <span class="row-num">
+                    {{ row._state === 'new' ? '✦' : (i + 1) }}
+                  </span>
+                </td>
+
+                <!-- userId -->
+                <td>
+                  <template v-if="row._state === 'new'">
+                    <input
+                      class="cell-input"
+                      :class="{ 'has-error': errors[row._id]?.userId }"
+                      v-model="row.userId"
+                      placeholder="例: U-1234"
+                      style="font-family:var(--font-mono);font-size:13px;"
+                    >
+                    <div class="error-tip" v-if="errors[row._id]?.userId">
+                      {{ errors[row._id].userId }}
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span class="row-num" style="font-size:12px;color:var(--text-muted);">
+                      {{ row.userId }}
+                    </span>
+                  </template>
+                </td>
+
+                <!-- Name -->
+                <td>
+                  <input
+                    class="cell-input"
+                    :class="{ 'has-error': errors[row._id]?.name }"
+                    v-model="row.name"
+                    placeholder="名前"
+                    :readonly="row._state === 'deleted'"
+                    @input="markEdited(row)"
+                  >
+                  <div class="error-tip" v-if="errors[row._id]?.name">
+                    {{ errors[row._id].name }}
+                  </div>
+                </td>
+
+                <!-- Email -->
+                <td class="cell-email">
+                  <input
+                    class="cell-input"
+                    :class="{ 'has-error': errors[row._id]?.email }"
+                    v-model="row.email"
+                    placeholder="example@mail.com"
+                    :readonly="row._state === 'deleted'"
+                    @input="markEdited(row)"
+                  >
+                  <div class="error-tip" v-if="errors[row._id]?.email">
+                    {{ errors[row._id].email }}
+                  </div>
+                </td>
+
+                <!-- Address -->
+                <td>
+                  <input
+                    class="cell-input"
+                    v-model="row.address"
+                    placeholder="住所"
+                    :readonly="row._state === 'deleted'"
+                    @input="markEdited(row)"
+                  >
+                </td>
+
+                <!-- Actions -->
+                <td>
+                  <div class="actions">
+                    <button
+                      v-if="row._state !== 'deleted' && row._state !== 'edited'"
+                      class="btn btn-danger-ghost"
+                      @click="deleteRow(row)"
+                      title="削除"
+                    >削除</button>
+                    <button
+                      v-if="row._state === 'deleted' || row._state === 'edited'"
+                      class="btn btn-undo"
+                      @click="undoRow(row)"
+                      title="元に戻す"
+                    >↩ 元に戻す</button>
+                    <button
+                      v-if="row._state === 'new' && false"
+                      class="btn btn-undo"
+                      @click="removeNewRow(row)"
+                    >✕</button>
+                  </div>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer -->
+      <div class="table-footer">
+        <span class="footer-info">
+          <template v-if="hasChanges">
+            変更あり：
+            <template v-if="stats.added">追加 {{ stats.added }} 件　</template>
+            <template v-if="stats.edited">編集 {{ stats.edited }} 件　</template>
+            <template v-if="stats.deleted">削除 {{ stats.deleted }} 件</template>
+          </template>
+          <template v-else>変更なし</template>
+        </span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" :disabled="!hasChanges" @click="resetAll">
+            すべてリセット
+          </button>
+          <button class="btn btn-primary" :disabled="!hasChanges" @click="submitAll">
+            <span v-if="submitting">送信中…</span>
+            <span v-else>変更を保存 <template v-if="changeCount > 0">({{ changeCount }} 件)</template></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-wrap" v-if="toast.visible">
+    <div class="toast">
+      <span class="toast-icon">{{ toast.icon }}</span>
+      <span class="toast-msg">{{ toast.msg }}</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const { createApp, ref, computed, reactive } = Vue;
+
+// ── サンプルデータ ──
+const INITIAL_USERS = [
+  { id: 1, userId: 'U-0001', name: '田中 太郎', email: 'tanaka@example.com',  address: '東京都渋谷区1-2-3' },
+  { id: 2, userId: 'U-0002', name: '山田 花子', email: 'yamada@example.com',  address: '大阪府大阪市4-5-6' },
+  { id: 3, userId: 'U-0003', name: '鈴木 次郎', email: 'suzuki@example.com',  address: '愛知県名古屋市7-8-9' },
+  { id: 4, userId: 'U-0004', name: '佐藤 美咲', email: 'sato@example.com',    address: '福岡県福岡市10-11-12' },
+];
+
+createApp({
+  setup() {
+    let idSeq = 100;
+
+    // ── rows: 各行に _state / _orig を付与 ──
+    const makeRow = (u) => ({
+      _id:    u.id ?? ++idSeq,
+      _state: 'unchanged',   // unchanged | edited | deleted | new
+      _orig:  { ...u },
+      userId:  u.userId  ?? '',
+      name:    u.name    ?? '',
+      email:   u.email   ?? '',
+      address: u.address ?? '',
+    });
+
+    const rows = ref(INITIAL_USERS.map(makeRow));
+    const errors = reactive({});
+    const submitting = ref(false);
+    const toast = reactive({ visible: false, msg: '', icon: '' });
+    let toastTimer = null;
+
+    // ── 統計 ──
+    const stats = computed(() => ({
+      total:   rows.value.length,
+      added:   rows.value.filter(r => r._state === 'new').length,
+      edited:  rows.value.filter(r => r._state === 'edited').length,
+      deleted: rows.value.filter(r => r._state === 'deleted').length,
+    }));
+
+    const changeCount = computed(() =>
+      stats.value.added + stats.value.edited + stats.value.deleted
+    );
+    const hasChanges = computed(() => changeCount.value > 0);
+
+    // ── 重複検知（field: 'email' | 'userId'）──
+    // userId は削除予定行も含めて全行チェック（サーバー側の曖昧さ排除）
+    const getDuplicateRowIds = (field) => {
+      const targetRows = field === 'userId'
+        ? rows.value
+        : rows.value.filter(r => r._state !== 'deleted');
+      const seen = {};
+      const dupes = new Set();
+      targetRows.forEach(r => {
+        const key = (r[field] ?? '').trim().toLowerCase();
+        if (!key) return;
+        if (seen[key] !== undefined) {
+          dupes.add(seen[key]);
+          dupes.add(r._id);
+        } else {
+          seen[key] = r._id;
+        }
+      });
+      return dupes;
+    };
+
+    const DUPE_MESSAGES = {
+      email:  'このメールアドレスは既に使用されています',
+      userId: 'このユーザーIDは既に使用されています',
+    };
+
+    const checkDuplicatesRealtime = () => {
+      const dupeEmail  = getDuplicateRowIds('email');
+      const dupeUserId = getDuplicateRowIds('userId');
+      rows.value.forEach(row => {
+        if (!errors[row._id]) errors[row._id] = {};
+
+        // email: 削除行は対象外
+        if (row._state !== 'deleted') {
+          if (dupeEmail.has(row._id)) {
+            errors[row._id].email = DUPE_MESSAGES.email;
+          } else if (errors[row._id]?.email === DUPE_MESSAGES.email) {
+            delete errors[row._id].email;
+          }
+        }
+
+        // userId: 削除行も含めて重複チェック
+        if (dupeUserId.has(row._id)) {
+          errors[row._id].userId = DUPE_MESSAGES.userId;
+        } else if (errors[row._id]?.userId === DUPE_MESSAGES.userId) {
+          delete errors[row._id].userId;
+        }
+
+        if (!Object.keys(errors[row._id]).length) delete errors[row._id];
+      });
+    };
+
+    // ── 行操作 ──
+    const markEdited = (row) => {
+      if (row._state === 'unchanged') row._state = 'edited';
+      // 内容が元通りなら unchanged に戻す
+      if (
+        row._state === 'edited' &&
+        row.name    === row._orig.name &&
+        row.email   === row._orig.email &&
+        row.address === row._orig.address
+      ) row._state = 'unchanged';
+      // リアルタイム重複チェック
+      checkDuplicatesRealtime();
+    };
+
+    const deleteRow = (row) => {
+      if (row._state === 'new') {
+        rows.value = rows.value.filter(r => r._id !== row._id);
+      } else {
+        // 編集済みの場合は元の値に戻してから削除予定にする
+        if (row._state === 'edited') {
+          row.name    = row._orig.name;
+          row.email   = row._orig.email;
+          row.address = row._orig.address;
+          delete errors[row._id];
+        }
+        row._state = 'deleted';
+      }
+      checkDuplicatesRealtime();
+    };
+
+    const undoRow = (row) => {
+      if (row._state === 'new') {
+        rows.value = rows.value.filter(r => r._id !== row._id);
+      } else {
+        row.name    = row._orig.name;
+        row.email   = row._orig.email;
+        row.address = row._orig.address;
+        row._state  = 'unchanged';
+        delete errors[row._id];
+      }
+      checkDuplicatesRealtime();
+    };
+
+    const addRow = () => {
+      rows.value.push({
+        _id:    ++idSeq,
+        _state: 'new',
+        _orig:  { userId: '', name: '', email: '', address: '' },
+        userId:  '',
+        name:    '',
+        email:   '',
+        address: '',
+      });
+      // 追加した行までスクロール
+      setTimeout(() => {
+        const trs = document.querySelectorAll('tbody tr');
+        trs[trs.length - 1]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
+    };
+
+    // ── バリデーション ──
+    const validate = () => {
+      let ok = true;
+      Object.keys(errors).forEach(k => delete errors[k]);
+
+      const dupeEmail  = getDuplicateRowIds('email');
+      const dupeUserId = getDuplicateRowIds('userId');
+
+      rows.value.forEach(row => {
+        const e = {};
+
+        // userId: 削除行も含めて重複チェック
+        if (row._state === 'new' && !row.userId.trim()) e.userId = 'ユーザーIDは必須です';
+        else if (dupeUserId.has(row._id)) e.userId = 'このユーザーIDは既に使用されています';
+
+        // 以下は削除行はスキップ
+        if (row._state === 'deleted') {
+          if (Object.keys(e).length) { errors[row._id] = e; ok = false; }
+          return;
+        }
+        if (!row.name.trim())  e.name  = '名前は必須です';
+        if (!row.email.trim()) e.email = 'メールは必須です';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email))
+          e.email = '正しいメール形式で入力してください';
+        else if (dupeEmail.has(row._id))
+          e.email = 'このメールアドレスは既に使用されています';
+        if (Object.keys(e).length) { errors[row._id] = e; ok = false; }
+      });
+      return ok;
+    };
+
+    // ── 一括送信 ──
+    const submitAll = async () => {
+      if (!validate()) {
+        showToast('⚠️', 'バリデーションエラーがあります。確認してください。');
+        return;
+      }
+      submitting.value = true;
+
+      const payload = {
+        add:    rows.value.filter(r => r._state === 'new').map(r => ({ userId: r.userId, name: r.name, email: r.email, address: r.address })),
+        update: rows.value.filter(r => r._state === 'edited').map(r => ({ id: r._id, name: r.name, email: r.email, address: r.address })),
+        delete: rows.value.filter(r => r._state === 'deleted').map(r => r._id),
+      };
+
+      console.log('📦 送信ペイロード:', JSON.stringify(payload, null, 2));
+
+      // ── 模擬API（500ms delay）──
+      await new Promise(r => setTimeout(r, 500));
+
+      // 送信後の状態確定
+      rows.value = rows.value
+        .filter(r => r._state !== 'deleted')
+        .map(r => ({ ...r, _state: 'unchanged', _orig: { name: r.name, email: r.email, address: r.address } }));
+      Object.keys(errors).forEach(k => delete errors[k]);
+
+      submitting.value = false;
+      showToast('✅', `${changeCount.value === 0 ? '変更' : payload.add.length + payload.update.length + payload.delete.length + ' 件'}を保存しました`);
+    };
+
+    // ── すべてリセット ──
+    const resetAll = () => {
+      rows.value.forEach(row => {
+        if (row._state === 'edited') {
+          row.name    = row._orig.name;
+          row.email   = row._orig.email;
+          row.address = row._orig.address;
+          row._state  = 'unchanged';
+        } else if (row._state === 'deleted') {
+          row._state = 'unchanged';
+        }
+      });
+      rows.value = rows.value.filter(r => r._state !== 'new');
+      Object.keys(errors).forEach(k => delete errors[k]);
+    };
+
+    // ── Toast ──
+    const showToast = (icon, msg) => {
+      toast.icon = icon; toast.msg = msg; toast.visible = true;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.visible = false; }, 3000);
+    };
+
+    return {
+      rows, errors, stats, hasChanges, changeCount, submitting, toast,
+      markEdited, deleteRow, undoRow, addRow, submitAll, resetAll,
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
