@@ -1,35 +1,26 @@
 <template>
-  <div class="flex flex-col items-center">
-    <v-data-table
-      id="custom-table"
-      class="mt-2 w-3/4 border"
-      density="compact"
-      :headers="headers"
-      item-value="id"
-      :items="users"
-    >
-      <!-- email列のカスタマイズ -->
+  <!-- テーブル全体を v-form で囲み、ref を設定 -->
+  <v-form ref="tableForm">
+    <v-data-table :headers="headers" :items="users" item-value="id">
       <template #item.email="{ item }">
         <v-text-field
           v-model="item.email"
-          class="rounded-md border border-blue-500 focus:border-2 focus:border-blue-700"
-          density="compact"
           :rules="[emailRules.required, emailRules.unique(item.id)]"
-          validate-on="input"
+          density="compact"
           variant="underlined"
+          validate-on="lazy"
         ></v-text-field>
       </template>
     </v-data-table>
-    <div class="border border-2">div</div>
-  </div>
+  </v-form>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 const headers = [
-  { title: 'ID', key: 'id', width: '5%' },
-  { title: '名前', key: 'name', width: '20%' },
+  { title: 'ID', key: 'id' },
+  { title: '名前', key: 'name' },
   { title: 'メールアドレス', key: 'email' },
 ]
 
@@ -39,23 +30,33 @@ const users = ref([
   { id: 3, name: '佐藤 花子', email: 'sato@example.com' },
 ])
 
+// フォームのリファレンス
+const tableForm = ref(null)
+
 // バリデーションルール
 const emailRules = {
-  // 必須チェック
   required: (v) => !!v || 'メールアドレスは必須です',
-
-  // 重複チェック（高階関数を使って対象行のIDを渡す）
   unique: (currentId) => {
     return (value) => {
       if (!value) return true
-
-      // 自分以外の行に、同じメールアドレスが存在するかチェック
       const isDuplicate = users.value.some(
-        (user) => user.id !== currentId && user.email === value.trim(),
+        (user) => user.id !== currentId && user.email?.trim() === value.trim(),
       )
-
-      return !isDuplicate || 'このメールアドレスは既に登録されています'
+      return !isDuplicate || '重複しています'
     }
   },
 }
+
+// データの変更をディープに監視し、他行のエラーもリアルタイムに更新する
+watch(
+  users,
+  async () => {
+    // DOMの更新を待ってからバリデーションを実行
+    await nextTick()
+    if (tableForm.value) {
+      tableForm.value.validate()
+    }
+  },
+  { deep: true },
+)
 </script>
