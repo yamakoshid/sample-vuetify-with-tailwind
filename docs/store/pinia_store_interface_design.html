@@ -1,0 +1,210 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-mono); }
+.root { padding: 1rem 0; display: flex; flex-direction: column; gap: 2rem; }
+.store-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.store-header { padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.store-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono); }
+.badge-parent { background: #EEEDFE; color: #3C3489; }
+.badge-child  { background: #E1F5EE; color: #085041; }
+.badge-grand  { background: #FAEEDA; color: #633806; }
+.store-body { display: grid; grid-template-columns: 1fr 1fr; }
+.section { padding: 12px 16px; }
+.section + .section { border-left: 0.5px solid var(--color-border-tertiary); }
+.section-label { font-size: 11px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.field { font-size: 12px; line-height: 1.9; color: var(--color-text-secondary); display: flex; align-items: baseline; gap: 6px; }
+.fname { color: var(--color-text-primary); font-weight: 500; font-family: var(--font-mono); }
+.ftype { color: #185FA5; font-family: var(--font-mono); }
+.sep { color: var(--color-text-tertiary); }
+.divider { grid-column: 1 / -1; height: 0.5px; background: var(--color-border-tertiary); }
+.fn-section { padding: 12px 16px; grid-column: 1 / -1; }
+.fn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+.fn-item { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 10px; }
+.fn-name { font-size: 12px; font-weight: 500; font-family: var(--font-mono); color: var(--color-text-primary); }
+.fn-desc { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; line-height: 1.5; }
+.fn-sig  { font-size: 10px; color: var(--color-text-tertiary); font-family: var(--font-mono); margin-top: 3px; }
+.arrow-row { display: flex; align-items: center; justify-content: center; gap: 24px; }
+.arrow-block { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.arrow-icon { font-size: 18px; color: var(--color-text-tertiary); }
+.arrow-label { font-size: 11px; color: var(--color-text-tertiary); }
+</style>
+<div class="root">
+<h2 class="sr-only">Piniaストアインターフェース設計 — parentStore / childrenStore / grandchildrenStore の state・getters・actions 定義</h2>
+
+<!-- parentStore -->
+<div class="store-card">
+  <div class="store-header">
+    <i class="ti ti-database" style="font-size:16px;color:#534AB7" aria-hidden="true"></i>
+    <span class="store-title">parentStore</span>
+    <span class="badge badge-parent">親ページ</span>
+  </div>
+  <div class="store-body">
+    <div class="section">
+      <div class="section-label">state</div>
+      <div class="field"><span class="fname">textField</span><span class="sep">:</span><span class="ftype">string</span></div>
+      <div class="field"><span class="fname">children</span><span class="sep">:</span><span class="ftype">Record&lt;string, ChildToggle&gt;</span></div>
+    </div>
+    <div class="section">
+      <div class="section-label">types</div>
+      <div class="field"><span class="fname">ChildToggle</span></div>
+      <div class="field" style="padding-left:12px"><span class="fname">childId</span><span class="sep">:</span><span class="ftype">string</span></div>
+      <div class="field" style="padding-left:12px"><span class="fname">enabled</span><span class="sep">:</span><span class="ftype">boolean</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="fn-section">
+      <div class="section-label">actions</div>
+      <div class="fn-grid">
+        <div class="fn-item">
+          <div class="fn-name">setTextField</div>
+          <div class="fn-desc">テキスト更新</div>
+          <div class="fn-sig">(value: string)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">toggleChild</div>
+          <div class="fn-desc">子のOn/Off切替。Off時は子・孫データをリセット</div>
+          <div class="fn-sig">(childId, enabled)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">reset</div>
+          <div class="fn-desc">全stateを初期値に戻す</div>
+          <div class="fn-sig">()</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- arrow -->
+<div class="arrow-row">
+  <div class="arrow-block">
+    <i class="ti ti-arrow-down" class="arrow-icon" style="font-size:18px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
+    <span class="arrow-label">toggleChild → childrenStore.resetByParent()</span>
+  </div>
+</div>
+
+<!-- childrenStore -->
+<div class="store-card">
+  <div class="store-header">
+    <i class="ti ti-database" style="font-size:16px;color:#0F6E56" aria-hidden="true"></i>
+    <span class="store-title">childrenStore</span>
+    <span class="badge badge-child">子ページ</span>
+  </div>
+  <div class="store-body">
+    <div class="section">
+      <div class="section-label">state</div>
+      <div class="field"><span class="fname">committed</span><span class="sep">:</span><span class="ftype">Record&lt;string, ChildData&gt;</span></div>
+      <div class="field"><span class="fname">draft</span><span class="sep">:</span><span class="ftype">Record&lt;string, ChildData&gt;</span></div>
+    </div>
+    <div class="section">
+      <div class="section-label">types — ChildData</div>
+      <div class="field"><span class="fname">textField</span><span class="sep">:</span><span class="ftype">string</span></div>
+      <div class="field"><span class="fname">grandchildren</span><span class="sep">:</span><span class="ftype">Record&lt;string, GrandToggle&gt;</span></div>
+      <div class="field"><span class="fname">GrandToggle.enabled</span><span class="sep">:</span><span class="ftype">boolean</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="fn-section">
+      <div class="section-label">actions</div>
+      <div class="fn-grid">
+        <div class="fn-item">
+          <div class="fn-name">beginEdit</div>
+          <div class="fn-desc">子ページを開く。committedをdraftにコピー</div>
+          <div class="fn-sig">(childId: string)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">setTextField</div>
+          <div class="fn-desc">draft のテキスト更新</div>
+          <div class="fn-sig">(childId, value)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">toggleGrandchild</div>
+          <div class="fn-desc">孫トグル。Off時はdraftの孫データのみリセット</div>
+          <div class="fn-sig">(childId, grandId, enabled)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">commit</div>
+          <div class="fn-desc">設定ボタン。draft → committed昇格。孫もcommit</div>
+          <div class="fn-sig">(childId: string)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">cancelEdit</div>
+          <div class="fn-desc">キャンセル。draftをcommittedに巻き戻し。孫も巻き戻し</div>
+          <div class="fn-sig">(childId: string)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">resetByParent</div>
+          <div class="fn-desc">親トグルOff。committed/draft両方を初期化</div>
+          <div class="fn-sig">(childId: string)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- arrow -->
+<div class="arrow-row">
+  <div class="arrow-block">
+    <i class="ti ti-arrow-down" style="font-size:18px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
+    <span class="arrow-label">commit / cancelEdit / resetByParent → grandchildrenStore へ連鎖</span>
+  </div>
+</div>
+
+<!-- grandchildrenStore -->
+<div class="store-card">
+  <div class="store-header">
+    <i class="ti ti-database" style="font-size:16px;color:#854F0B" aria-hidden="true"></i>
+    <span class="store-title">grandchildrenStore</span>
+    <span class="badge badge-grand">孫ページ</span>
+  </div>
+  <div class="store-body">
+    <div class="section">
+      <div class="section-label">state</div>
+      <div class="field"><span class="fname">committed</span><span class="sep">:</span><span class="ftype">Record&lt;string, GrandData&gt;</span></div>
+      <div class="field"><span class="fname">draft</span><span class="sep">:</span><span class="ftype">Record&lt;string, GrandData&gt;</span></div>
+    </div>
+    <div class="section">
+      <div class="section-label">types — GrandData</div>
+      <div class="field"><span class="fname">textField</span><span class="sep">:</span><span class="ftype">string</span></div>
+      <div class="field"><span class="fname">// ...その他フィールド</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="fn-section">
+      <div class="section-label">actions</div>
+      <div class="fn-grid">
+        <div class="fn-item">
+          <div class="fn-name">beginEdit</div>
+          <div class="fn-desc">孫ページを開く。committedをdraftにコピー</div>
+          <div class="fn-sig">(grandId: string)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">setTextField</div>
+          <div class="fn-desc">draft のテキスト更新</div>
+          <div class="fn-sig">(grandId, value)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">commit</div>
+          <div class="fn-desc">設定ボタン。draft → committed昇格</div>
+          <div class="fn-sig">(grandId: string)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">cancelEdit</div>
+          <div class="fn-desc">キャンセル。draftをcommittedに巻き戻し</div>
+          <div class="fn-sig">(grandId: string)</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">resetByChild</div>
+          <div class="fn-desc">子トグルOff (draftのみ)。子cancelEditで復元可能</div>
+          <div class="fn-sig">(grandIds: string[])</div>
+        </div>
+        <div class="fn-item">
+          <div class="fn-name">resetByParent</div>
+          <div class="fn-desc">親トグルOff。committed/draft両方を初期化</div>
+          <div class="fn-sig">(grandIds: string[])</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
