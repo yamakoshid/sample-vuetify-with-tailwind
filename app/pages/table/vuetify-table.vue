@@ -1,22 +1,26 @@
 <template>
-  <!-- テーブル全体を v-form で囲み、ref を設定 -->
-  <v-form ref="tableForm">
-    <v-data-table :headers="headers" :items="users" item-value="id">
-      <template #item.email="{ item }">
-        <v-text-field
-          v-model="item.email"
-          :rules="[emailRules.required, emailRules.unique(item.id)]"
-          density="compact"
-          variant="underlined"
-          validate-on="lazy"
-        ></v-text-field>
-      </template>
-    </v-data-table>
-  </v-form>
+  <v-data-table :headers="headers" :items="users" item-value="id">
+    <template #item.email="{ item, index }">
+      <!-- refを配列としてマウントし、入力時に他行への影響をチェック -->
+      <v-text-field
+        :ref="
+          (el) => {
+            if (el) inputRefs[item.id] = el
+          }
+        "
+        v-model="item.email"
+        :rules="[emailRules.required, emailRules.unique(item.id)]"
+        density="compact"
+        variant="underlined"
+        validate-on="input"
+        @update:model-value="onEmailInput($event, item.id)"
+      ></v-text-field>
+    </template>
+  </v-data-table>
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref } from 'vue'
 
 const headers = [
   { title: 'ID', key: 'id' },
@@ -30,10 +34,9 @@ const users = ref([
   { id: 3, name: '佐藤 花子', email: 'sato@example.com' },
 ])
 
-// フォームのリファレンス
-const tableForm = ref(null)
+// 各行の v-text-field インスタンスを ID キーで保持するオブジェクト
+const inputRefs = {}
 
-// バリデーションルール
 const emailRules = {
   required: (v) => !!v || 'メールアドレスは必須です',
   unique: (currentId) => {
@@ -47,16 +50,24 @@ const emailRules = {
   },
 }
 
-// データの変更をディープに監視し、他行のエラーもリアルタイムに更新する
-watch(
-  users,
-  async () => {
-    // DOMの更新を待ってからバリデーションを実行
-    await nextTick()
-    if (tableForm.value) {
-      tableForm.value.validate()
+// 入力があった時に、ピンポイントで影響のある行だけを再検証する
+const onEmailInput = (newValue, currentId) => {
+  if (!newValue) return
+
+  const trimmedValue = newValue.trim()
+
+  // 自分以外の行で、同じメールアドレス、または「直前まで同じだった」行を探す
+  users.value.forEach((user) => {
+    if (user.id === currentId) return
+
+    // 重複関係にある（または解消された）行だけを個別に再検証
+    if (
+      user.email?.trim() === trimmedValue ||
+      inputRefs[user.id]?.isValid === false
+    ) {
+      // 該当行のコンポーネントだけを直接バリデーション
+      inputRefs[user.id]?.validate()
     }
-  },
-  { deep: true },
-)
+  })
+}
 </script>
