@@ -166,6 +166,8 @@ classDiagram
 
 ---
 
+# Gemini回答
+
 各ケースにおける実行アクション一覧
 
 1. 直接ブラウザのリンクで子ページを指定して遷移したとき（ストアが空）
@@ -219,3 +221,130 @@ onBeforeRouteLeave((to, from, next) => {
 ```
 
 コードは注意してご使用ください。このように、ユーザーの不規則な画面移動に対しては Vue/Nuxtのライフサイクル（onBeforeRouteLeave）をセーフティネットとして活用 することで、ストアの中に古いゴミデータ（編集中の下書き）が残留するバグを完璧に防ぐことができます。この各ケースの制御を踏まえ、ブラウザの「更新（リロード）」ボタンが押されてPiniaのメモリ状態が完全にリセットされた場合の、LocalStorage等を使ったデータ退避（永続化）の必要性についてさらに詳しく確認しますか？
+
+---
+
+# Claude回答
+
+## 各ケースの対応
+
+---
+
+### 直接ブラウザのリンクで子ページを指定して遷移（ストアが空）
+
+|                    |                                                          |
+| ------------------ | -------------------------------------------------------- |
+| **タイミング**     | 子の `onMounted`                                         |
+| **実行アクション** | `parentStore.load()` → 完了後 `childStore.open(childId)` |
+
+```ts
+onMounted(async () => {
+  if (!parentStore.draft) {
+    await parentStore.load()   // APIからデータ取得
+  }
+  childStore.open(childId)
+})
+```
+
+ストアが空の場合は親データを先にロードしてから `buffer` を展開する必要があります。
+
+---
+
+### 親から子の編集ボタンクリックで遷移（navigateTo）
+
+|                    |                            |
+| ------------------ | -------------------------- |
+| **タイミング**     | `navigateTo` 実行**直前**  |
+| **実行アクション** | `childStore.open(childId)` |
+
+```ts
+// 親ページ
+function onClickChildEdit(childId) {
+  childStore.open(childId)     // bufferにdeep copy
+  navigateTo(`/child/${childId}`)
+}
+```
+
+`onMounted` ではなく遷移前に実行する理由は、**ページ遷移アニメーション中にすでにbufferが存在している**状態にするためです。`onMounted` でも動作はしますが、画面描画の一瞬 `buffer = null` の状態が生じてちらつく可能性があります。
+
+---
+
+### 孫から設定ボタンで子のページに戻るとき
+
+|                    |                       |
+| ------------------ | --------------------- |
+| **タイミング**     | `navigateTo` 実行直前 |
+| **実行アクション** | `grandStore.commit()` |
+
+```ts
+// 孫ページ
+function onClickApply() {
+  grandStore.commit()           // buffer → childStore.buffer.grandchildren[id] に書き戻し
+  navigateTo(`/child/${childId}`)
+}
+```
+
+---
+
+### 孫からキャンセルボタンで子のページに戻るとき
+
+|                    |                       |
+| ------------------ | --------------------- |
+| **タイミング**     | `navigateTo` 実行直前 |
+| **実行アクション** | `grandStore.cancel()` |
+
+```ts
+// 孫ページ
+function onClickCancel() {
+  grandStore.cancel()           // buffer を破棄。childStore.buffer は触らない
+  navigateTo(`/child/${childId}`)
+}
+```
+
+---
+
+### ブラウザの戻るボタンをクリックしたとき（設定かキャンセルか不明）
+
+これが最も注意が必要なケースです。
+
+|                    |                                              |
+| ------------------ | -------------------------------------------- |
+| **タイミング**     | 子・孫ページの `onBeforeRouteLeave`          |
+| **実行アクション** | `grandStore.cancel()` を**安全側**として実行 |
+
+```ts
+// 孫ページ
+onBeforeRouteLeave((to, from, next) => {
+  // 設定ボタン経由ならcommit済みなのでbuffer=null
+  // キャンセルボタン経由ならcancel済みなのでbuffer=null
+  // どちらも未実行（ブラウザバック）の場合のみ実行
+  if (grandStore.buffer !== null) {
+    grandStore.cancel()         // 安全側（キャンセル扱い）
+  }
+  next()
+})
+```
+
+```ts
+// 子ページも同様
+onBeforeRouteLeave((to, from, next) => {
+  if (childStore.buffer !== null) {
+    childStore.cancel()         // 安全側（キャンセル扱い）
+  }
+  next()
+})
+```
+
+`buffer !== null` のチェックがポイントです。設定・キャンセルボタン経由では **すでに `buffer = null` になっている**ため、`onBeforeRouteLeave` が二重に走っても安全です。
+
+---
+
+## まとめ
+
+| ケース                       | タイミング           | アクション                                 |
+| ---------------------------- | -------------------- | ------------------------------------------ |
+| 直接URL遷移（ストアが空）    | 子の `onMounted`     | `parentStore.load()` → `childStore.open()` |
+| 親から編集ボタンで遷移       | `navigateTo` 直前    | `childStore.open(childId)`                 |
+| 孫から設定ボタンで戻る       | `navigateTo` 直前    | `grandStore.commit()`                      |
+| 孫からキャンセルボタンで戻る | `navigateTo` 直前    | `grandStore.cancel()`                      |
+| ブラウザの戻るボタン         | `onBeforeRouteLeave` | `buffer !== null` なら `cancel()`          |
