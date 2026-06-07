@@ -229,7 +229,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * EditableTable — 汎用編集可能テーブルコンポーネント
  *
@@ -258,16 +258,34 @@
 
 import { computed, reactive, ref } from 'vue'
 
-const props = defineProps({
-  columns: {
-    type: Array,
-    required: true,
+type ColumnDef = {
+  key: string
+  label: string
+  type: 'text' | 'email' | 'readonly'
+  required?: boolean
+  unique?: boolean
+  uniqueScope?: 'active' | 'all'
+  placeholder?: string
+}
+
+type EditableRow = {
+  _id: number | string
+  _state: 'unchanged' | 'new' | 'edited' | 'deleted'
+  _orig: Record<string, unknown>
+} & Record<string, unknown>
+
+type ErrorState = Record<string, string>
+type ErrorMap = Record<number | string, ErrorState>
+
+const props = withDefaults(
+  defineProps<{
+    columns: ColumnDef[]
+    initial?: Record<string, unknown>[]
+  }>(),
+  {
+    initial: () => [],
   },
-  initial: {
-    type: Array,
-    default: () => [],
-  },
-})
+)
 
 const emit = defineEmits(['submit'])
 
@@ -275,17 +293,21 @@ const emit = defineEmits(['submit'])
 let idSeq = 1000
 
 // ── 行データ初期化 ──────────────────────────────────────
-function makeRow(item) {
+function makeRow(item: Record<string, unknown>): EditableRow {
+  const values = Object.fromEntries(
+    props.columns.map((c) => [c.key, item[c.key] ?? '']),
+  ) as Record<string, unknown>
+
   return {
-    _id: item._id ?? ++idSeq,
+    _id: (item._id as number | string) ?? ++idSeq,
     _state: 'unchanged',
     _orig: { ...item },
-    ...Object.fromEntries(props.columns.map((c) => [c.key, item[c.key] ?? ''])),
+    ...values,
   }
 }
 
-const rows = ref(props.initial.map((item) => makeRow(item)))
-const errors = reactive({})
+const rows = ref<EditableRow[]>(props.initial.map((item) => makeRow(item)))
+const errors = reactive<ErrorMap>({})
 const submitting = ref(false)
 
 // ── 統計 ────────────────────────────────────────────────
@@ -301,7 +323,7 @@ const changeCount = computed(
 const hasChanges = computed(() => changeCount.value > 0)
 
 // ── 行スタイル ───────────────────────────────────────────
-function rowClass(row) {
+function rowClass(row: EditableRow) {
   return {
     'bg-emerald-50': row._state === 'new',
     'bg-amber-50': row._state === 'edited',
@@ -313,16 +335,18 @@ function rowClass(row) {
 }
 
 // ── 重複検知 ─────────────────────────────────────────────
-function getDuplicateRowIds(col) {
+function getDuplicateRowIds(col: ColumnDef) {
   const scope = col.uniqueScope ?? 'active'
   const target =
     scope === 'all'
       ? rows.value
       : rows.value.filter((r) => r._state !== 'deleted')
-  const seen = {}
-  const dupes = new Set()
+  const seen: Record<string, number | string> = {}
+  const dupes = new Set<number | string>()
   for (const r of target) {
-    const key = (r[col.key] ?? '').trim().toLowerCase()
+    const key = String(r[col.key] ?? '')
+      .trim()
+      .toLowerCase()
     if (!key) continue
     if (seen[key] === undefined) {
       seen[key] = r._id
@@ -346,16 +370,14 @@ function checkDuplicatesRealtime() {
         ? rows.value
         : rows.value.filter((r) => r._state !== 'deleted')
     for (const row of target) {
-      if (!errors[row._id]) {
-        errors[row._id] = {}
-      }
+      const rowErrors = errors[row._id] ?? (errors[row._id] = {})
       if (dupes.has(row._id)) {
-        errors[row._id][col.key] = `この${col.label}は既に使用されています`
+        rowErrors[col.key] = `この${col.label}は既に使用されています`
       } else if (
-        errors[row._id][col.key] === `この${col.label}は既に使用されています`
+        rowErrors[col.key] === `この${col.label}は既に使用されています`
       ) {
-        Reflect.deleteProperty(errors[row._id], col.key)
-        if (Object.keys(errors[row._id]).length === 0) {
+        Reflect.deleteProperty(rowErrors, col.key)
+        if (Object.keys(rowErrors).length === 0) {
           Reflect.deleteProperty(errors, row._id)
         }
       }
@@ -364,10 +386,12 @@ function checkDuplicatesRealtime() {
 }
 
 // ── セルエラー取得 ───────────────────────────────────────
-const cellError = (row, key) => errors[row._id]?.[key] ?? null
+function cellError(row: EditableRow, key: string) {
+  return errors[row._id]?.[key] ?? null
+}
 
 // ── 入力ハンドラ ─────────────────────────────────────────
-function onInput(row) {
+function onInput(row: EditableRow) {
   if (row._state === 'unchanged') row._state = 'edited'
   const orig = row._orig
   const allSame = props.columns.every((c) => row[c.key] === (orig[c.key] ?? ''))
@@ -384,11 +408,15 @@ function addRow() {
     ...Object.fromEntries(props.columns.map((c) => [c.key, ''])),
   })
   setTimeout(() => {
-    document.querySelectorAll('tbody tr:last-child input')[0]?.focus()
+    ;(
+      document.querySelectorAll('tbody tr:last-child input')[0] as
+        | HTMLInputElement
+        | undefined
+    )?.focus()
   }, 50)
 }
 
-function deleteRow(row) {
+function deleteRow(row: EditableRow) {
   if (row._state === 'new') {
     rows.value = rows.value.filter((r) => r._id !== row._id)
   } else {
@@ -403,7 +431,7 @@ function deleteRow(row) {
   checkDuplicatesRealtime()
 }
 
-function undoRow(row) {
+function undoRow(row: EditableRow) {
   if (row._state === 'new') {
     rows.value = rows.value.filter((r) => r._id !== row._id)
   } else {
@@ -437,18 +465,19 @@ function validate() {
 
   const dupeMap = Object.fromEntries(
     uniqueCols.value.map((col) => [col.key, getDuplicateRowIds(col)]),
-  )
+  ) as Record<string, Set<number | string>>
 
   for (const row of rows.value) {
-    const e = {}
+    const e: Record<string, string> = {}
 
     for (const col of props.columns) {
       // unique チェック（scope:all は deleted行も対象）
       if (col.unique) {
         const scope = col.uniqueScope ?? 'active'
+        const dupeSet = dupeMap[col.key] ?? new Set<number | string>()
         if (
           (scope === 'all' || row._state !== 'deleted') &&
-          dupeMap[col.key].has(row._id)
+          dupeSet.has(row._id)
         ) {
           e[col.key] = `この${col.label}は既に使用されています`
           continue
@@ -459,7 +488,8 @@ function validate() {
       if (row._state === 'deleted') continue
 
       // 必須チェック
-      if (col.required && !(row[col.key] ?? '').trim()) {
+      const value = String(row[col.key] ?? '')
+      if (col.required && !value.trim()) {
         e[col.key] = `${col.label}は必須です`
         continue
       }
@@ -467,8 +497,8 @@ function validate() {
       // email 形式チェック
       if (
         col.type === 'email' &&
-        row[col.key].trim() &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row[col.key])
+        value.trim() &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
       ) {
         e[col.key] = '正しいメール形式で入力してください'
       }
