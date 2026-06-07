@@ -38,7 +38,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { reactive, ref } from 'vue'
 
 // ── 列定義 ─────────────────────────────────────────────────────────────────
 /**
@@ -121,7 +121,7 @@ const initialUsers = [
 const toast = reactive({ visible: false, icon: '', msg: '' })
 let toastTimer = null
 
-const showToast = (icon, msg) => {
+function showToast (icon, msg) {
   toast.icon = icon
   toast.msg = msg
   toast.visible = true
@@ -132,7 +132,7 @@ const showToast = (icon, msg) => {
 }
 
 // ── submit ハンドラ ─────────────────────────────────────────────────────────
-const onSubmit = (payload) => {
+function onSubmit (payload) {
   console.log('📦 送信ペイロード:', JSON.stringify(payload, null, 2))
 
   const total =

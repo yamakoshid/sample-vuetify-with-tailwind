@@ -1,14 +1,14 @@
 <template>
   <!-- テーブル全体を v-form で囲み、ref を設定 -->
   <v-form ref="tableForm">
-    <v-data-table :headers="headers" :items="users" item-value="id">
+    <v-data-table :headers="headers" item-value="id" :items="users">
       <template #item.email="{ item }">
         <v-text-field
           v-model="item.email"
-          :rules="[emailRules.required, emailRules.unique(item.id)]"
           density="compact"
-          variant="underlined"
+          :rules="[emailRules.required, emailRules.unique(item.id)]"
           validate-on="lazy"
+          variant="underlined"
         ></v-text-field>
       </template>
     </v-data-table>
@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 
 const headers = [
   { title: 'ID', key: 'id' },

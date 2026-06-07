@@ -42,8 +42,8 @@
       >
         <p class="text-xs text-gray-500">セルをクリックして直接編集できます</p>
         <button
-          type="button"
           class="inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          type="button"
           @click="addRow"
         >
           <svg
@@ -53,10 +53,10 @@
             viewBox="0 0 24 24"
           >
             <path
+              d="M12 4v16m8-8H4"
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M12 4v16m8-8H4"
             />
           </svg>
           新規追加

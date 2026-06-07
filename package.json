@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "format": "eslint --fix && prettier --write .",
     "mcp": "ruler apply",
     "mcp:revert": "ruler revert"
   },

@@ -1,5 +1,5 @@
 <template>
-  <v-data-table :headers="headers" :items="users" item-value="id">
+  <v-data-table :headers="headers" item-value="id" :items="users">
     <template #item.email="{ item, index }">
       <!-- refを配列としてマウントし、入力時に他行への影響をチェック -->
       <v-text-field
@@ -9,10 +9,10 @@
           }
         "
         v-model="item.email"
-        :rules="[emailRules.required, emailRules.unique(item.id)]"
         density="compact"
-        variant="underlined"
+        :rules="[emailRules.required, emailRules.unique(item.id)]"
         validate-on="input"
+        variant="underlined"
         @update:model-value="onEmailInput($event, item.id)"
       ></v-text-field>
     </template>
@@ -56,14 +56,14 @@ const emailRules = {
 }
 
 // 入力があった時に、ピンポイントで影響のある行だけを再検証する
-const onEmailInput = (newValue, currentId) => {
+function onEmailInput (newValue, currentId) {
   if (!newValue) return
 
   const trimmedValue = newValue.trim()
 
   // 自分以外の行で、同じメールアドレス、または「直前まで同じだった」行を探す
-  users.value.forEach((user) => {
-    if (user.id === currentId) return
+  for (const user of users.value) {
+    if (user.id === currentId) continue
 
     // 重複関係にある（または解消された）行だけを個別に再検証
     if (
@@ -73,6 +73,6 @@ const onEmailInput = (newValue, currentId) => {
       // 該当行のコンポーネントだけを直接バリデーション
       inputRefs[user.id]?.validate()
     }
-  })
+  }
 }
 </script>
