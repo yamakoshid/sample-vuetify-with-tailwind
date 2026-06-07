@@ -354,9 +354,9 @@ function checkDuplicatesRealtime() {
       } else if (
         errors[row._id][col.key] === `この${col.label}は既に使用されています`
       ) {
-        delete errors[row._id][col.key]
+        Reflect.deleteProperty(errors[row._id], col.key)
         if (Object.keys(errors[row._id]).length === 0) {
-          delete errors[row._id]
+          Reflect.deleteProperty(errors, row._id)
         }
       }
     }
@@ -396,7 +396,7 @@ function deleteRow(row) {
       for (const c of props.columns) {
         row[c.key] = row._orig[c.key] ?? ''
       }
-      delete errors[row._id]
+      Reflect.deleteProperty(errors, row._id)
     }
     row._state = 'deleted'
   }
@@ -411,7 +411,7 @@ function undoRow(row) {
       row[c.key] = row._orig[c.key] ?? ''
     }
     row._state = 'unchanged'
-    delete errors[row._id]
+    Reflect.deleteProperty(errors, row._id)
   }
   checkDuplicatesRealtime()
 }
@@ -423,17 +423,17 @@ function resetAll() {
         row[c.key] = row._orig[c.key] ?? ''
       }
       row._state = 'unchanged'
-      delete errors[row._id]
+      Reflect.deleteProperty(errors, row._id)
     }
   }
   rows.value = rows.value.filter((r) => r._state !== 'new')
-  for (const k of Object.keys(errors)) delete errors[k]
+  for (const k of Object.keys(errors)) Reflect.deleteProperty(errors, k)
 }
 
 // ── バリデーション ───────────────────────────────────────
 function validate() {
   let ok = true
-  for (const k of Object.keys(errors)) delete errors[k]
+  for (const k of Object.keys(errors)) Reflect.deleteProperty(errors, k)
 
   const dupeMap = Object.fromEntries(
     uniqueCols.value.map((col) => [col.key, getDuplicateRowIds(col)]),
