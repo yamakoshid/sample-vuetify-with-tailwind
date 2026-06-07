@@ -92,8 +92,8 @@
             <!-- 空行 -->
             <tr v-if="rows.length === 0">
               <td
-                :colspan="columns.length + 2"
                 class="px-4 py-10 text-center text-sm text-gray-400"
+                :colspan="columns.length + 2"
               >
                 データがありません。「新規追加」から追加してください。
               </td>
@@ -131,9 +131,7 @@
                 <!-- 入力セル -->
                 <template v-else>
                   <input
-                    :type="col.type === 'email' ? 'email' : 'text'"
-                    :placeholder="col.placeholder ?? col.label"
-                    :readonly="row._state === 'deleted'"
+                    v-model="row[col.key]"
                     :class="[
                       'w-full rounded border-0 bg-transparent px-1.5 py-1 text-sm transition-all outline-none',
                       col.type === 'readonly' || col.type === 'email'
@@ -146,7 +144,9 @@
                         ? 'bg-red-50 ring-2 ring-red-400'
                         : '',
                     ]"
-                    v-model="row[col.key]"
+                    :placeholder="col.placeholder ?? col.label"
+                    :readonly="row._state === 'deleted'"
+                    :type="col.type === 'email' ? 'email' : 'text'"
                     @input="onInput(row)"
                   />
                   <p
@@ -164,8 +164,8 @@
                   <!-- 通常・新規行 → 削除ボタン -->
                   <button
                     v-if="row._state !== 'deleted' && row._state !== 'edited'"
-                    type="button"
                     class="rounded px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+                    type="button"
                     @click="deleteRow(row)"
                   >
                     削除
@@ -174,8 +174,8 @@
                   <!-- 編集行・削除行 → 元に戻すボタン -->
                   <button
                     v-if="row._state === 'edited' || row._state === 'deleted'"
-                    type="button"
                     class="rounded px-2 py-1 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-50"
+                    type="button"
                     @click="undoRow(row)"
                   >
                     ↩ 元に戻す
@@ -194,25 +194,25 @@
         <p class="text-xs text-gray-500">
           <template v-if="hasChanges">
             変更あり：
-            <span v-if="stats.added">追加 {{ stats.added }} 件　</span>
-            <span v-if="stats.edited">編集 {{ stats.edited }} 件　</span>
+            <span v-if="stats.added">追加 {{ stats.added }} 件</span>
+            <span v-if="stats.edited">編集 {{ stats.edited }} 件</span>
             <span v-if="stats.deleted">削除 {{ stats.deleted }} 件</span>
           </template>
           <template v-else>変更なし</template>
         </p>
         <div class="flex gap-2">
           <button
-            type="button"
-            :disabled="!hasChanges"
             class="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="!hasChanges"
+            type="button"
             @click="resetAll"
           >
             すべてリセット
           </button>
           <button
-            type="button"
-            :disabled="!hasChanges || submitting"
             class="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+            :disabled="!hasChanges || submitting"
+            type="button"
             @click="submitAll"
           >
             <span v-if="submitting">送信中…</span>
@@ -256,7 +256,7 @@
  *     payload.delete any[]               削除行の key 値一覧
  */
 
-import { ref, reactive, computed } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const props = defineProps({
   columns: {
@@ -275,14 +275,16 @@ const emit = defineEmits(['submit'])
 let idSeq = 1000
 
 // ── 行データ初期化 ──────────────────────────────────────
-const makeRow = (item) => ({
-  _id: item._id ?? ++idSeq,
-  _state: 'unchanged',
-  _orig: { ...item },
-  ...Object.fromEntries(props.columns.map((c) => [c.key, item[c.key] ?? ''])),
-})
+function makeRow(item) {
+  return {
+    _id: item._id ?? ++idSeq,
+    _state: 'unchanged',
+    _orig: { ...item },
+    ...Object.fromEntries(props.columns.map((c) => [c.key, item[c.key] ?? ''])),
+  }
+}
 
-const rows = ref(props.initial.map(makeRow))
+const rows = ref(props.initial.map((item) => makeRow(item)))
 const errors = reactive({})
 const submitting = ref(false)
 
@@ -299,17 +301,19 @@ const changeCount = computed(
 const hasChanges = computed(() => changeCount.value > 0)
 
 // ── 行スタイル ───────────────────────────────────────────
-const rowClass = (row) => ({
-  'bg-emerald-50': row._state === 'new',
-  'bg-amber-50': row._state === 'edited',
-  'bg-red-50 opacity-60': row._state === 'deleted',
-  'border-l-2 border-l-emerald-400 pl-0': row._state === 'new',
-  'border-l-2 border-l-amber-400': row._state === 'edited',
-  'border-l-2 border-l-red-400': row._state === 'deleted',
-})
+function rowClass(row) {
+  return {
+    'bg-emerald-50': row._state === 'new',
+    'bg-amber-50': row._state === 'edited',
+    'bg-red-50 opacity-60': row._state === 'deleted',
+    'border-l-2 border-l-emerald-400 pl-0': row._state === 'new',
+    'border-l-2 border-l-amber-400': row._state === 'edited',
+    'border-l-2 border-l-red-400': row._state === 'deleted',
+  }
+}
 
 // ── 重複検知 ─────────────────────────────────────────────
-const getDuplicateRowIds = (col) => {
+function getDuplicateRowIds(col) {
   const scope = col.uniqueScope ?? 'active'
   const target =
     scope === 'all'
@@ -317,47 +321,53 @@ const getDuplicateRowIds = (col) => {
       : rows.value.filter((r) => r._state !== 'deleted')
   const seen = {}
   const dupes = new Set()
-  target.forEach((r) => {
+  for (const r of target) {
     const key = (r[col.key] ?? '').trim().toLowerCase()
-    if (!key) return
-    if (seen[key] !== undefined) {
+    if (!key) continue
+    if (seen[key] === undefined) {
+      seen[key] = r._id
+    } else {
       dupes.add(seen[key])
       dupes.add(r._id)
-    } else seen[key] = r._id
-  })
+    }
+  }
   return dupes
 }
 
 const uniqueCols = computed(() => props.columns.filter((c) => c.unique))
 
 // ── リアルタイム重複チェック ─────────────────────────────
-const checkDuplicatesRealtime = () => {
-  uniqueCols.value.forEach((col) => {
+function checkDuplicatesRealtime() {
+  for (const col of uniqueCols.value) {
     const dupes = getDuplicateRowIds(col)
     const scope = col.uniqueScope ?? 'active'
     const target =
       scope === 'all'
         ? rows.value
         : rows.value.filter((r) => r._state !== 'deleted')
-    target.forEach((row) => {
-      if (!errors[row._id]) errors[row._id] = {}
+    for (const row of target) {
+      if (!errors[row._id]) {
+        errors[row._id] = {}
+      }
       if (dupes.has(row._id)) {
         errors[row._id][col.key] = `この${col.label}は既に使用されています`
       } else if (
         errors[row._id][col.key] === `この${col.label}は既に使用されています`
       ) {
         delete errors[row._id][col.key]
-        if (!Object.keys(errors[row._id]).length) delete errors[row._id]
+        if (Object.keys(errors[row._id]).length === 0) {
+          delete errors[row._id]
+        }
       }
-    })
-  })
+    }
+  }
 }
 
 // ── セルエラー取得 ───────────────────────────────────────
 const cellError = (row, key) => errors[row._id]?.[key] ?? null
 
 // ── 入力ハンドラ ─────────────────────────────────────────
-const onInput = (row) => {
+function onInput(row) {
   if (row._state === 'unchanged') row._state = 'edited'
   const orig = row._orig
   const allSame = props.columns.every((c) => row[c.key] === (orig[c.key] ?? ''))
@@ -366,7 +376,7 @@ const onInput = (row) => {
 }
 
 // ── 行操作 ───────────────────────────────────────────────
-const addRow = () => {
+function addRow() {
   rows.value.push({
     _id: ++idSeq,
     _state: 'new',
@@ -378,14 +388,14 @@ const addRow = () => {
   }, 50)
 }
 
-const deleteRow = (row) => {
+function deleteRow(row) {
   if (row._state === 'new') {
     rows.value = rows.value.filter((r) => r._id !== row._id)
   } else {
     if (row._state === 'edited') {
-      props.columns.forEach((c) => {
+      for (const c of props.columns) {
         row[c.key] = row._orig[c.key] ?? ''
-      })
+      }
       delete errors[row._id]
     }
     row._state = 'deleted'
@@ -393,84 +403,87 @@ const deleteRow = (row) => {
   checkDuplicatesRealtime()
 }
 
-const undoRow = (row) => {
+function undoRow(row) {
   if (row._state === 'new') {
     rows.value = rows.value.filter((r) => r._id !== row._id)
   } else {
-    props.columns.forEach((c) => {
+    for (const c of props.columns) {
       row[c.key] = row._orig[c.key] ?? ''
-    })
+    }
     row._state = 'unchanged'
     delete errors[row._id]
   }
   checkDuplicatesRealtime()
 }
 
-const resetAll = () => {
-  rows.value.forEach((row) => {
+function resetAll() {
+  for (const row of rows.value) {
     if (row._state === 'edited' || row._state === 'deleted') {
-      props.columns.forEach((c) => {
+      for (const c of props.columns) {
         row[c.key] = row._orig[c.key] ?? ''
-      })
+      }
       row._state = 'unchanged'
       delete errors[row._id]
     }
-  })
+  }
   rows.value = rows.value.filter((r) => r._state !== 'new')
-  Object.keys(errors).forEach((k) => delete errors[k])
+  for (const k of Object.keys(errors)) delete errors[k]
 }
 
 // ── バリデーション ───────────────────────────────────────
-const validate = () => {
+function validate() {
   let ok = true
-  Object.keys(errors).forEach((k) => delete errors[k])
+  for (const k of Object.keys(errors)) delete errors[k]
 
   const dupeMap = Object.fromEntries(
     uniqueCols.value.map((col) => [col.key, getDuplicateRowIds(col)]),
   )
 
-  rows.value.forEach((row) => {
+  for (const row of rows.value) {
     const e = {}
 
-    props.columns.forEach((col) => {
+    for (const col of props.columns) {
       // unique チェック（scope:all は deleted行も対象）
       if (col.unique) {
         const scope = col.uniqueScope ?? 'active'
-        if (scope === 'all' || row._state !== 'deleted') {
-          if (dupeMap[col.key].has(row._id)) {
-            e[col.key] = `この${col.label}は既に使用されています`
-            return
-          }
+        if (
+          (scope === 'all' || row._state !== 'deleted') &&
+          dupeMap[col.key].has(row._id)
+        ) {
+          e[col.key] = `この${col.label}は既に使用されています`
+          continue
         }
       }
 
       // deleted行はここ以降スキップ
-      if (row._state === 'deleted') return
+      if (row._state === 'deleted') continue
 
       // 必須チェック
       if (col.required && !(row[col.key] ?? '').trim()) {
         e[col.key] = `${col.label}は必須です`
-        return
+        continue
       }
 
       // email 形式チェック
-      if (col.type === 'email' && row[col.key].trim()) {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row[col.key])) {
-          e[col.key] = '正しいメール形式で入力してください'
-        }
+      if (
+        col.type === 'email' &&
+        row[col.key].trim() &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row[col.key])
+      ) {
+        e[col.key] = '正しいメール形式で入力してください'
       }
-    })
+    }
 
-    if (Object.keys(e).length) {
+    if (Object.keys(e).length > 0) {
       errors[row._id] = e
       ok = false
     }
-  })
+  }
   return ok
 }
 
 // ── 一括送信 ─────────────────────────────────────────────
-const submitAll = async () => {
+async function submitAll() {
   if (!validate()) return
 
   submitting.value = true
