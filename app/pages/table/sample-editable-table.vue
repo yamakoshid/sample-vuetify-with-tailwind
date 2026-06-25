@@ -7,16 +7,16 @@
         <p>変更はすべてまとめて一括送信されます</p>
       </div>
       <div class="badge-row">
-        <span class="badge badge-blue" v-if="stats.total">
+        <span v-if="stats.total" class="badge badge-blue">
           <span class="dot"></span>{{ stats.total }} 件
         </span>
-        <span class="badge badge-green" v-if="stats.added">
+        <span v-if="stats.added" class="badge badge-green">
           <span class="dot"></span>追加 {{ stats.added }}
         </span>
-        <span class="badge badge-amber" v-if="stats.edited">
+        <span v-if="stats.edited" class="badge badge-amber">
           <span class="dot"></span>編集 {{ stats.edited }}
         </span>
-        <span class="badge badge-red" v-if="stats.deleted">
+        <span v-if="stats.deleted" class="badge badge-red">
           <span class="dot"></span>削除 {{ stats.deleted }}
         </span>
       </div>
@@ -76,13 +76,13 @@
                 <td>
                   <template v-if="row._state === 'new'">
                     <input
+                      v-model="row.userId"
                       class="cell-input"
                       :class="{ 'has-error': errors[row._id]?.userId }"
-                      v-model="row.userId"
                       placeholder="例: U-1234"
                       style="font-family: var(--font-mono); font-size: 13px"
                     />
-                    <div class="error-tip" v-if="errors[row._id]?.userId">
+                    <div v-if="errors[row._id]?.userId" class="error-tip">
                       {{ errors[row._id].userId }}
                     </div>
                   </template>
@@ -99,14 +99,14 @@
                 <!-- Name -->
                 <td>
                   <input
+                    v-model="row.name"
                     class="cell-input"
                     :class="{ 'has-error': errors[row._id]?.name }"
-                    v-model="row.name"
                     placeholder="名前"
                     :readonly="row._state === 'deleted'"
                     @input="markEdited(row)"
                   />
-                  <div class="error-tip" v-if="errors[row._id]?.name">
+                  <div v-if="errors[row._id]?.name" class="error-tip">
                     {{ errors[row._id].name }}
                   </div>
                 </td>
@@ -114,14 +114,14 @@
                 <!-- Email -->
                 <td class="cell-email">
                   <input
+                    v-model="row.email"
                     class="cell-input"
                     :class="{ 'has-error': errors[row._id]?.email }"
-                    v-model="row.email"
                     placeholder="example@mail.com"
                     :readonly="row._state === 'deleted'"
                     @input="markEdited(row)"
                   />
-                  <div class="error-tip" v-if="errors[row._id]?.email">
+                  <div v-if="errors[row._id]?.email" class="error-tip">
                     {{ errors[row._id].email }}
                   </div>
                 </td>
@@ -129,8 +129,8 @@
                 <!-- Address -->
                 <td>
                   <input
-                    class="cell-input"
                     v-model="row.address"
+                    class="cell-input"
                     placeholder="住所"
                     :readonly="row._state === 'deleted'"
                     @input="markEdited(row)"
@@ -143,16 +143,16 @@
                     <button
                       v-if="row._state !== 'deleted' && row._state !== 'edited'"
                       class="btn btn-danger-ghost"
-                      @click="deleteRow(row)"
                       title="削除"
+                      @click="deleteRow(row)"
                     >
                       削除
                     </button>
                     <button
                       v-if="row._state === 'deleted' || row._state === 'edited'"
                       class="btn btn-undo"
-                      @click="undoRow(row)"
                       title="元に戻す"
+                      @click="undoRow(row)"
                     >
                       ↩ 元に戻す
                     </button>
@@ -248,7 +248,8 @@ const INITIAL_USERS = [
 let idSeq = 100
 
 // ── rows: 各行に _state / _orig を付与 ──
-const makeRow = (u) => ({
+function makeRow (u) {
+  return {
   _id: u.id ?? ++idSeq,
   _state: 'unchanged', // unchanged | edited | deleted | new
   _orig: { ...u },
@@ -256,7 +257,8 @@ const makeRow = (u) => ({
   name: u.name ?? '',
   email: u.email ?? '',
   address: u.address ?? '',
-})
+}
+}
 
 const rows = ref(INITIAL_USERS.map(makeRow))
 const errors = reactive({})
@@ -279,23 +281,23 @@ const hasChanges = computed(() => changeCount.value > 0)
 
 // ── 重複検知（field: 'email' | 'userId'）──
 // userId は削除予定行も含めて全行チェック（サーバー側の曖昧さ排除）
-const getDuplicateRowIds = (field) => {
+function getDuplicateRowIds (field) {
   const targetRows =
     field === 'userId'
       ? rows.value
       : rows.value.filter((r) => r._state !== 'deleted')
   const seen = {}
   const dupes = new Set()
-  targetRows.forEach((r) => {
+  for (const r of targetRows) {
     const key = (r[field] ?? '').trim().toLowerCase()
-    if (!key) return
-    if (seen[key] !== undefined) {
+    if (!key) continue
+    if (seen[key] === undefined) {
+      seen[key] = r._id
+    } else {
       dupes.add(seen[key])
       dupes.add(r._id)
-    } else {
-      seen[key] = r._id
     }
-  })
+  }
   return dupes
 }
 
@@ -304,10 +306,10 @@ const DUPE_MESSAGES = {
   userId: 'このユーザーIDは既に使用されています',
 }
 
-const checkDuplicatesRealtime = () => {
+function checkDuplicatesRealtime () {
   const dupeEmail = getDuplicateRowIds('email')
   const dupeUserId = getDuplicateRowIds('userId')
-  rows.value.forEach((row) => {
+  for (const row of rows.value) {
     if (!errors[row._id]) errors[row._id] = {}
 
     // email: 削除行は対象外
@@ -326,12 +328,12 @@ const checkDuplicatesRealtime = () => {
       delete errors[row._id].userId
     }
 
-    if (!Object.keys(errors[row._id]).length) delete errors[row._id]
-  })
+    if (Object.keys(errors[row._id]).length === 0) delete errors[row._id]
+  }
 }
 
 // ── 行操作 ──
-const markEdited = (row) => {
+function markEdited (row) {
   if (row._state === 'unchanged') row._state = 'edited'
   // 内容が元通りなら unchanged に戻す
   if (
@@ -345,7 +347,7 @@ const markEdited = (row) => {
   checkDuplicatesRealtime()
 }
 
-const deleteRow = (row) => {
+function deleteRow (row) {
   if (row._state === 'new') {
     rows.value = rows.value.filter((r) => r._id !== row._id)
   } else {
@@ -361,7 +363,7 @@ const deleteRow = (row) => {
   checkDuplicatesRealtime()
 }
 
-const undoRow = (row) => {
+function undoRow (row) {
   if (row._state === 'new') {
     rows.value = rows.value.filter((r) => r._id !== row._id)
   } else {
@@ -374,7 +376,7 @@ const undoRow = (row) => {
   checkDuplicatesRealtime()
 }
 
-const addRow = () => {
+function addRow () {
   rows.value.push({
     _id: ++idSeq,
     _state: 'new',
@@ -387,7 +389,7 @@ const addRow = () => {
   // 追加した行までスクロール
   setTimeout(() => {
     const trs = document.querySelectorAll('tbody tr')
-    trs[trs.length - 1]?.scrollIntoView({
+    trs.at(-1)?.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
     })
@@ -395,14 +397,14 @@ const addRow = () => {
 }
 
 // ── バリデーション ──
-const validate = () => {
+function validate () {
   let ok = true
-  Object.keys(errors).forEach((k) => delete errors[k])
+  for (const k of Object.keys(errors)) delete errors[k]
 
   const dupeEmail = getDuplicateRowIds('email')
   const dupeUserId = getDuplicateRowIds('userId')
 
-  rows.value.forEach((row) => {
+  for (const row of rows.value) {
     const e = {}
 
     // userId: 削除行も含めて重複チェック
@@ -413,11 +415,11 @@ const validate = () => {
 
     // 以下は削除行はスキップ
     if (row._state === 'deleted') {
-      if (Object.keys(e).length) {
+      if (Object.keys(e).length > 0) {
         errors[row._id] = e
         ok = false
       }
-      return
+      continue
     }
     if (!row.name.trim()) e.name = '名前は必須です'
     if (!row.email.trim()) e.email = 'メールは必須です'
@@ -425,16 +427,16 @@ const validate = () => {
       e.email = '正しいメール形式で入力してください'
     else if (dupeEmail.has(row._id))
       e.email = 'このメールアドレスは既に使用されています'
-    if (Object.keys(e).length) {
+    if (Object.keys(e).length > 0) {
       errors[row._id] = e
       ok = false
     }
-  })
+  }
   return ok
 }
 
 // ── 一括送信 ──
-const submitAll = async () => {
+async function submitAll () {
   if (!validate()) {
     showToast('⚠️', 'バリデーションエラーがあります。確認してください。')
     return
@@ -474,7 +476,7 @@ const submitAll = async () => {
       _state: 'unchanged',
       _orig: { name: r.name, email: r.email, address: r.address },
     }))
-  Object.keys(errors).forEach((k) => delete errors[k])
+  for (const k of Object.keys(errors)) delete errors[k]
 
   submitting.value = false
   showToast(
@@ -484,8 +486,8 @@ const submitAll = async () => {
 }
 
 // ── すべてリセット ──
-const resetAll = () => {
-  rows.value.forEach((row) => {
+function resetAll () {
+  for (const row of rows.value) {
     if (row._state === 'edited') {
       row.name = row._orig.name
       row.email = row._orig.email
@@ -494,13 +496,13 @@ const resetAll = () => {
     } else if (row._state === 'deleted') {
       row._state = 'unchanged'
     }
-  })
+  }
   rows.value = rows.value.filter((r) => r._state !== 'new')
-  Object.keys(errors).forEach((k) => delete errors[k])
+  for (const k of Object.keys(errors)) delete errors[k]
 }
 
 // ── Toast ──
-const showToast = (icon, msg) => {
+function showToast (icon, msg) {
   toast.icon = icon
   toast.msg = msg
   toast.visible = true
