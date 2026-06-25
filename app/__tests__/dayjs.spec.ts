@@ -167,4 +167,26 @@ describe('date test', () => {
       console.log('backendDate is past')
     }
   })
+
+  describe('JSON化', () => {
+    test('formatの挙動', () => {
+      vi.stubEnv('TZ', 'Asia/Tokyo')
+      console.log(JSON.stringify(dayjs()))
+      console.log(JSON.stringify(dayjs('2025-12-01')))
+      console.log(JSON.stringify(dayjs.tz('2025-12-01', 'UTC').toDate()))
+      console.log(JSON.stringify(new Date()))
+      console.log(JSON.stringify(new Date('2025-12-01')))
+      vi.unstubAllEnvs()
+    })
+
+    test('formatの挙動', () => {
+      vi.stubEnv('TZ', 'UTC')
+      console.log(JSON.stringify(dayjs()))
+      console.log(JSON.stringify(dayjs('2025-12-01')))
+      console.log(JSON.stringify(dayjs.tz('2025-12-01', 'UTC').toDate()))
+      console.log(JSON.stringify(new Date()))
+      console.log(JSON.stringify(new Date('2025-12-01')))
+      vi.unstubAllEnvs()
+    })
+  })
 })
