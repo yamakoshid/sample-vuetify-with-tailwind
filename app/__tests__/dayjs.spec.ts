@@ -168,24 +168,38 @@ describe('date test', () => {
     }
   })
 
-  describe('JSON化', () => {
-    test('formatの挙動', () => {
+  describe('JSON.stringifyすると、ISO8601拡張形式(タイムゾーンはUTCを示す。)', () => {
+    test('Asia/Tokyo', () => {
       vi.stubEnv('TZ', 'Asia/Tokyo')
       console.log(JSON.stringify(dayjs()))
-      console.log(JSON.stringify(dayjs('2025-12-01')))
-      console.log(JSON.stringify(dayjs.tz('2025-12-01', 'UTC').toDate()))
+      // タイムゾーン指定なしで日付を作ると、ブラウザのタイムゾーンの0時としてDateオブジェクトが作られる。そのため、UTCに変換すると、9時間前の11/30 15:00になる。
+      expect(JSON.stringify(dayjs('2025-12-01'))).toBe(
+        '"2025-11-30T15:00:00.000Z"',
+      )
+      expect(JSON.stringify(dayjs.tz('2025-12-01', 'UTC').toDate())).toBe(
+        '"2025-12-01T00:00:00.000Z"',
+      )
       console.log(JSON.stringify(new Date()))
-      console.log(JSON.stringify(new Date('2025-12-01')))
+      expect(JSON.stringify(new Date('2025-12-01'))).toBe(
+        '"2025-12-01T00:00:00.000Z"',
+      )
       vi.unstubAllEnvs()
     })
 
-    test('formatの挙動', () => {
+    test('UTC', () => {
       vi.stubEnv('TZ', 'UTC')
       console.log(JSON.stringify(dayjs()))
-      console.log(JSON.stringify(dayjs('2025-12-01')))
-      console.log(JSON.stringify(dayjs.tz('2025-12-01', 'UTC').toDate()))
+      // タイムゾーン指定なしで日付を作ると、ブラウザのタイムゾーンの0時としてDateオブジェクトが作られる。UTCに変換しても、タイムゾーンがUTCなのでずれが発生しない。
+      expect(JSON.stringify(dayjs('2025-12-01'))).toBe(
+        '"2025-12-01T00:00:00.000Z"',
+      )
+      expect(JSON.stringify(dayjs.tz('2025-12-01', 'UTC').toDate())).toBe(
+        '"2025-12-01T00:00:00.000Z"',
+      )
       console.log(JSON.stringify(new Date()))
-      console.log(JSON.stringify(new Date('2025-12-01')))
+      expect(JSON.stringify(new Date('2025-12-01'))).toBe(
+        '"2025-12-01T00:00:00.000Z"',
+      )
       vi.unstubAllEnvs()
     })
   })
