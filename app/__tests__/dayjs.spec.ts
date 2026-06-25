@@ -62,7 +62,7 @@ describe('date test', () => {
     })
   })
 
-  describe('dayjs日付 UTC版', () => {
+  describe('dayjs日付 タイムゾーンがUTCの場合', () => {
     beforeEach(() => {
       vi.stubEnv('TZ', 'UTC')
     })
@@ -81,9 +81,26 @@ describe('date test', () => {
       const date = dayjs.tz('2024-01-01', 'Asia/Tokyo').toDate()
       expect(date).toEqual(new Date('2024-01-01T00:00:00+09:00'))
     })
+
+    test('タイムゾーンなしでformat', () => {
+      // タイムゾーンなしでformatすると、ブラウザのタイムゾーンで解釈される。
+      expect(dayjs('2024-01-01T00:00:00Z').format('YYYY-MM-DDTHH:mm:ss')).toBe(
+        '2024-01-01T00:00:00',
+      )
+
+      expect(
+        dayjs.tz('2024-01-01T00:00:00Z', 'UTC').format('YYYY-MM-DDTHH:mm:ss'),
+      ).toBe('2024-01-01T00:00:00')
+
+      expect(
+        dayjs
+          .tz('2024-01-01T00:00:00Z', 'Asia/Tokyo')
+          .format('YYYY-MM-DDTHH:mm:ss'),
+      ).toBe('2024-01-01T00:00:00')
+    })
   })
 
-  describe('dayjs日付 Asia/Tokyo版', () => {
+  describe('dayjs日付 タイムゾーンがAsia/Tokyoの場合', () => {
     beforeEach(() => {
       vi.stubEnv('TZ', 'Asia/Tokyo')
     })
@@ -99,11 +116,30 @@ describe('date test', () => {
     })
 
     test('timezoneを指定すると、ブラウザのタイムゾーンによらず一意に定まる', () => {
-      dayjs.extend(utc)
-      dayjs.extend(timezone)
       const date = dayjs.tz('2024-01-01', 'Asia/Tokyo').toDate()
-
       expect(date).toEqual(new Date('2024-01-01T00:00:00+09:00'))
+    })
+    test('タイムゾーンなしでformat', () => {
+      // タイムゾーンなしでformatすると、ブラウザのタイムゾーンで解釈される。
+      expect(dayjs('2024-01-01T00:00:00Z').format('YYYY-MM-DDTHH:mm:ss')).toBe(
+        '2024-01-01T09:00:00',
+      )
+
+      expect(
+        dayjs.tz('2024-01-01T00:00:00Z', 'UTC').format('YYYY-MM-DDTHH:mm:ss'),
+      ).toBe('2024-01-01T00:00:00')
+
+      // これは、どうやら2024-01-01T00:00:00Zよりも、Asia/Tokyoの指定が強いため、Zが無視されて
+      // 2024-01-01T15:00:00Zと解釈されている。
+      // こんな風に使ってはいけない。
+      // 入力文字列はZ付きなのでUTC, しかし指定はAsia/Tokyo。どうも、UTCが優先されてる?
+      expect(
+        dayjs
+          .tz('2024-01-01T00:00:00Z', 'Asia/Tokyo')
+          .format('YYYY-MM-DDTHH:mm:ss'),
+      ).toBe('2024-01-01T00:00:00')
+      // 確認
+      console.log(dayjs.tz('2024-01-01T00:00:00Z', 'Asia/Tokyo'))
     })
   })
 
@@ -169,6 +205,10 @@ describe('date test', () => {
   })
 
   describe('JSON.stringifyすると、ISO8601拡張形式(タイムゾーンはUTCを示す。)', () => {
+    // これは、Dateオブジェクトの仕様で、toJSONメソッドが、デフォルトでtoISOString()(を返すため。
+    // > toISOString() メソッドは、タイムゾーンのオフセットを常に Z (UTC) に設定した状態で、日付の文字列表現を日時文字列形式で返します。
+    // https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Date
+
     test('Asia/Tokyo', () => {
       vi.stubEnv('TZ', 'Asia/Tokyo')
       console.log(JSON.stringify(dayjs()))
