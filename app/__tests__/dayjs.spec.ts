@@ -243,4 +243,14 @@ describe('date test', () => {
       vi.unstubAllEnvs()
     })
   })
+
+  describe('timezoneのでふぉると', () => {
+    test('test', () => {
+      console.log(dayjs('2020-05-05').tz().format())
+    })
+
+    test('test2', () => {
+      console.log(dayjs('2020-05-05').tz().format())
+    })
+  })
 })
