@@ -174,3 +174,26 @@ dayjs.tz(*, JST)
   → .tz(JST).format('YYYY年M月D日')    画面表示（JST固定）
   → .local().format('YYYY年M月D日')    画面表示（ローカルタイム）
 ```
+
+## 5 月度の最初の日を返す
+
+```typescript
+import dayjs, { Dayjs } from 'dayjs'
+
+const JST = 'Asia/Tokyo'
+
+/**
+ * 指定日が属する月度の最初の日（21日）を返す
+ * @param date - dayjs オブジェクト
+ * @returns 月度開始日（YYYY-MM-DD）
+ */
+function getFiscalMonthStart(date: Dayjs): Dayjs {
+  if (date.date() <= 20) {
+    // 1〜20日 → 前月21日
+    return date.subtract(1, 'month').date(21).startOf('day')
+  } else {
+    // 21〜末日 → 当月21日
+    return date.date(21).startOf('day')
+  }
+}
+```
