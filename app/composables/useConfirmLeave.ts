@@ -96,7 +96,6 @@ export function useConfirmLeave(
     })
     console.log('ユーザーの選択:', ok)
 
-    // if-else で確実にどちらか片方だけが呼ばれるように制御する
     if (ok) {
       await onLeave()
       return true
