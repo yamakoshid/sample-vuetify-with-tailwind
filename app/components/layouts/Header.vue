@@ -150,6 +150,7 @@ import {
   MenuItems,
 } from '@headlessui/vue'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { useRouter } from 'vue-router'
 
 const route = useRoute()
 
@@ -173,4 +174,10 @@ watch(
   },
   { immediate: true },
 )
+
+const router = useRouter()
+
+function navigateTo(href) {
+  router.push(href)
+}
 </script>
