@@ -18,7 +18,7 @@ const { showModal, handleConfirm, handleCancel } = useConfirmLeave(onConfirmed)
 
 <template>
   <div>
-    <p class="text-lg font-semibold text-gray-800">1 特別ページの内容...</p>
+    <p class="text-lg font-semibold text-gray-800">2 特別ページの内容...</p>
 
     <div class="flex flex-col items-start justify-start gap-4">
       <button

@@ -116,7 +116,7 @@ const links = [
   2. the classes below are NOT wrapped in any CSS layer, so they "win" over everything else
 */
 .hero-card {
-  @apply w-full py-3 transition-none md:pr-[120px];
+  @apply w-full py-3 transition-none md:pr-30;
 }
 
 :deep(.v-card) {
