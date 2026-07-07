@@ -1,0 +1,27 @@
+[
+  {
+    "title": "",
+    "sortable": false,
+    "key": "data-table-group",
+    "width": "48px",
+    "value": "data-table-group"
+  },
+  {
+    "title": "商品名",
+    "key": "name",
+    "value": "name",
+    "sortable": true
+  },
+  {
+    "title": "カテゴリ",
+    "key": "category",
+    "value": "category",
+    "sortable": true
+  },
+  {
+    "title": "金額",
+    "key": "amount",
+    "value": "amount",
+    "sortable": true
+  }
+]

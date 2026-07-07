@@ -56,30 +56,28 @@ const category = [{ key: 'category', order: 'asc' }]
       >
         <tr v-ripple @click="toggleGroup(item)">
           <!-- group列 -->
-          <td>
-            <v-btn
-              :icon="isGroupOpen(item) ? '$expand' : '$next'"
-              color="medium-emphasis"
-              density="comfortable"
-              size="small"
-              variant="outlined"
-            ></v-btn>
-          </td>
+          <td v-for="column in columns" :key="column.key">
+            <template v-if="column.key === 'data-table-group'">
+              <v-btn
+                :icon="isGroupOpen(item) ? '$expand' : '$next'"
+                color="medium-emphasis"
+                density="comfortable"
+                size="small"
+                variant="outlined"
+              ></v-btn>
+            </template>
 
-          <!-- 残り -->
-          <!-- <td v-for="item in item.items" :key="item.id"></td> -->
-          <td>
-            <!-- <pre wrap>{{ item }}</pre> -->
-            <!-- <pre wrap>{{ columns }}</pre> -->
-            <span>{{ item.value }}</span>
-          </td>
-          <td></td>
-          <td>
-            {{
-              item.items.reduce((sum, item) => {
-                return (sum += item.raw.amount)
-              }, 0)
-            }}
+            <template v-else-if="column.key === 'category'">
+              {{ item.value }}
+            </template>
+            <template v-else-if="column.key === 'amount'">
+              {{
+                item.items.reduce((sum, item) => {
+                  return (sum += item.raw.amount)
+                }, 0)
+              }}
+            </template>
+            <template v-else> - </template>
           </td>
         </tr>
       </template>

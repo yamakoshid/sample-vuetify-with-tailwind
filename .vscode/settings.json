@@ -23,19 +23,19 @@
     "editor.formatOnSave": true
   },
   "editor.suggest.insertMode": "replace",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "workbench.colorCustomizations": {
-    "editorIndentGuide.background1": "#FFB86C",
-    "editorIndentGuide.background2": "#FF75B5",
-    "editorIndentGuide.background3": "#45A9F9",
-    "editorIndentGuide.background4": "#B084EB",
-    "editorIndentGuide.background5": "#E6E6E6",
-    "editorIndentGuide.background6": "#19f9d8",
-    "editorIndentGuide.activeBackground1": "#FFB86C",
-    "editorIndentGuide.activeBackground2": "#FF75B5",
-    "editorIndentGuide.activeBackground3": "#45A9F9",
-    "editorIndentGuide.activeBackground4": "#B084EB",
-    "editorIndentGuide.activeBackground5": "#E6E6E6",
-    "editorIndentGuide.activeBackground6": "#19f9d8"
-  }
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+  // "workbench.colorCustomizations": {
+  //   "editorIndentGuide.background1": "#FFB86C",
+  //   "editorIndentGuide.background2": "#FF75B5",
+  //   "editorIndentGuide.background3": "#45A9F9",
+  //   "editorIndentGuide.background4": "#B084EB",
+  //   "editorIndentGuide.background5": "#E6E6E6",
+  //   "editorIndentGuide.background6": "#19f9d8",
+  //   "editorIndentGuide.activeBackground1": "#FFB86C",
+  //   "editorIndentGuide.activeBackground2": "#FF75B5",
+  //   "editorIndentGuide.activeBackground3": "#45A9F9",
+  //   "editorIndentGuide.activeBackground4": "#B084EB",
+  //   "editorIndentGuide.activeBackground5": "#E6E6E6",
+  //   "editorIndentGuide.activeBackground6": "#19f9d8"
+  // }
 }

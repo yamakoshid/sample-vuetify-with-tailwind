@@ -22,3 +22,15 @@ export default withNuxt({
 })
   .append(...vuetifyConfigs)
   .append(prettier)
+  .append({
+    rules: {
+      'vue/attributes-order': [
+        'error',
+        {
+          alphabetical: false,
+          sortLineLength: false,
+          ignoreVBindObject: false,
+        },
+      ],
+    },
+  })
