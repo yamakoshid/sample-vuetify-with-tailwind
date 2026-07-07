@@ -1,5 +1,8 @@
 <script setup>
+import FlexRow from '../tailwind/flex-row.vue'
+
 const headers = [
+  { title: '', key: 'data-table-group', width: '48px' },
   { title: 'カテゴリ', key: 'category' },
   { title: '商品名', key: 'name' },
   { title: '金額', key: 'amount' },
@@ -38,36 +41,56 @@ const category = [{ key: 'category', order: 'asc' }]
       show-group-by
       hide-default-footer
     >
-      <template #group-header="{ item, columns, toggleGroup, isGroupOpen }">
-        <tr>
-          <td
-            v-ripple
-            :colspan="columns.length"
-            class="cursor-pointer"
-            @click="toggleGroup(item)"
-          >
-            <div class="d-flex align-center">
-              <v-btn
-                :icon="isGroupOpen(item) ? '$expand' : '$next'"
-                color="medium-emphasis"
-                density="comfortable"
-                size="small"
-                variant="outlined"
-              ></v-btn>
+      <template
+        #group-header="{
+          // index,
+          item,
+          columns,
+          // isExpanded,
+          // toggleExpand,
+          // isSelected,
+          // toggleSelect,
+          toggleGroup,
+          isGroupOpen,
+        }"
+      >
+        <tr v-ripple @click="toggleGroup(item)">
+          <!-- group列 -->
+          <td>
+            <v-btn
+              :icon="isGroupOpen(item) ? '$expand' : '$next'"
+              color="medium-emphasis"
+              density="comfortable"
+              size="small"
+              variant="outlined"
+            ></v-btn>
+          </td>
 
-              <span class="ms-4">Tool Type: {{ item.value }}</span>
-            </div>
+          <!-- 残り -->
+          <!-- <td v-for="item in item.items" :key="item.id"></td> -->
+          <td>
+            <!-- <pre wrap>{{ item }}</pre> -->
+            <!-- <pre wrap>{{ columns }}</pre> -->
+            <span>{{ item.value }}</span>
+          </td>
+          <td></td>
+          <td>
+            {{
+              item.items.reduce((sum, item) => {
+                return (sum += item.raw.amount)
+              }, 0)
+            }}
           </td>
         </tr>
       </template>
 
       <template #group-summary="{ item, columns }">
         <tr class="font-weight-medium">
-          <td>
-            <!-- <pre wrap>{{ columns }}</pre> -->
-            <!-- <pre wrap>{{ item }}</pre> -->
-          </td>
           <td></td>
+          <td>
+            <!-- <pre wrap> {{ item }} </pre> -->
+            <!-- <pre wrap> {{ columns }} </pre> -->
+          </td>
           <td></td>
           <td>
             {{
