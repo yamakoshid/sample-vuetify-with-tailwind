@@ -37,8 +37,9 @@ const emit = defineEmits(['next', 'cancel'])
 
 const headers = [
   { title: 'ユーザー名', key: 'name' },
+  { title: 'メールアドレス', key: 'mailAddress' },
   { title: '状態', key: 'status', width: 140 },
-  { title: 'Action', key: 'data-table-expand', width: 140 },
+  { title: 'Action', key: 'data-table-expand', width: 1, align: 'end' },
 ]
 
 const selected = ref([])
@@ -141,7 +142,6 @@ function handleCancel() {
     <v-data-table
       v-model="selected"
       v-model:expanded="expanded"
-      class="rounded-2xl border border-gray-300"
       :headers="headers"
       :items="users"
       item-value="id"
@@ -173,19 +173,75 @@ function handleCancel() {
           @click="toggleExpand(internalItem)"
         ></v-btn>
       </template>
-
       <template #expanded-row="{ columns, item }">
         <tr>
           <td :colspan="1"></td>
-          <td :colspan="columns.length - 1">
-            <v-table class="no-row-lines" density="compact">
-              <tbody>
-                <tr v-for="s in item.services" :key="s.name">
-                  <td>{{ s.name }}</td>
-                  <td>{{ s.role }}</td>
-                </tr>
-              </tbody>
-            </v-table>
+          <td :colspan="columns.length - 1" class="py-2">
+            <v-sheet rounded="lg" :border="true">
+              <v-table density="compact">
+                <tbody class="">
+                  <tr>
+                    <th>サービス名</th>
+                    <!-- <th>役割</th> -->
+                  </tr>
+                </tbody>
+                <tbody>
+                  <tr v-for="s in item.services" :key="s.name">
+                    <td>
+                      <span>{{ s.name }}</span>
+
+                      <span v-if="s.owner" class="pa-2"
+                        ><v-icon>mdi-account-cog</v-icon></span
+                      >
+                      <span v-if="s.owner" class="pa-2"
+                        ><v-icon>mdi-star</v-icon></span
+                      >
+                      <span v-if="s.owner" class="pa-2"
+                        ><v-icon>mdi-shield-star</v-icon></span
+                      >
+
+                      <span v-if="s.owner" class="pa-2"
+                        ><v-icon>mdi-key-star</v-icon></span
+                      >
+
+                      <span v-if="s.owner" class="pa-2"
+                        ><v-icon>mdi-pencil-lock</v-icon></span
+                      >
+
+                      <span v-if="s.owner" class="pa-2"
+                        ><v-icon>mdi-shield-edit</v-icon></span
+                      >
+
+                      <span v-if="s.owner" class="pa-2"
+                        ><v-icon>mdi-office-building-marker</v-icon></span
+                      >
+                      <span v-if="s.owner" class="pa-2"
+                        ><v-icon>mdi-account-hierarchy</v-icon></span
+                      >
+                      <span v-if="!s.owner" class="pa-2"
+                        ><v-icon>mdi-eye-outline</v-icon></span
+                      >
+                      <span v-if="!s.owner" class="pa-2"
+                        ><v-icon>mdi-book-open-blank-variant</v-icon></span
+                      >
+                      <span v-if="!s.owner" class="pa-2"
+                        ><v-icon>mdi-lock-outline</v-icon></span
+                      >
+
+                      <span v-if="!s.owner" class="pa-2"
+                        ><v-icon>mdi-pencil-off-outline</v-icon></span
+                      >
+                      <span v-if="!s.owner" class="pa-2"
+                        ><v-icon>mdi-account-arrow-right-outline</v-icon></span
+                      >
+                      <span v-if="!s.owner" class="pa-2"
+                        ><v-icon>mdi-minus</v-icon></span
+                      >
+                    </td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </v-sheet>
 
             <v-alert
               v-if="!item.editable"
