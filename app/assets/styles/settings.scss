@@ -1,6 +1,7 @@
 @use 'vuetify/settings' with (
-  // $color-pack: true,
-  // $utilities: false,
+  $color-pack: false,
+  $utilities: false,
+
   $heading-font-family: var(--font-heading),
   $body-font-family: var(--font-body),
   $grid-breakpoints: (
@@ -9,12 +10,12 @@
     'md': 840px,
     'lg': 1145px,
     'xl': 1545px,
-    'xxl': 2138px
+    'xxl': 2138px,
   ),
   $container-max-widths: (
     'md': 700px,
     'lg': 1000px,
     'xl': 1400px,
-    'xxl': 2000px
+    'xxl': 2000px,
   )
 );
