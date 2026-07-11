@@ -155,20 +155,30 @@ function handleCancel() {
           </v-chip>
         </template>
 
+        <!-- <template
+          #:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }"
+        >
+          <v-btn
+            :append-icon="
+              isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'
+            "
+            :text="isExpanded(internalItem) ? 'Collapse' : 'More info'"
+            class="text-none"
+            color="medium-emphasis"
+            size="small"
+            variant="text"
+            width="105"
+            border
+            slim
+            @click="toggleExpand(internalItem)"
+          ></v-btn>
+        </template> -->
+
         <template #expanded-row="{ columns, item }">
           <tr>
             <td :colspan="columns.length">
               <v-card variant="text" class="my-2">
-                <v-card-subtitle>
-                  紐付きサービス一覧（自分の管理下にあるサービスのみ表示）
-                </v-card-subtitle>
                 <v-table density="compact">
-                  <thead>
-                    <tr>
-                      <th>サービス名</th>
-                      <th>紐付き種別</th>
-                    </tr>
-                  </thead>
                   <tbody>
                     <tr v-for="s in item.services" :key="s.name">
                       <td>{{ s.name }}</td>
