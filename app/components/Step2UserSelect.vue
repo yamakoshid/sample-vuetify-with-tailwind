@@ -37,8 +37,8 @@ const emit = defineEmits(['next', 'cancel'])
 
 const headers = [
   { title: 'ユーザー名', key: 'name' },
-  { title: 'オーナーサービス', key: 'ownerService' },
   { title: '状態', key: 'status', width: 140 },
+  { title: 'Action', key: 'data-table-expand', width: 140 },
 ]
 
 const selected = ref([])
@@ -138,87 +138,81 @@ function handleCancel() {
       </v-btn>
     </div>
 
-    <v-card>
-      <v-data-table
-        v-model="selected"
-        v-model:expanded="expanded"
-        :headers="headers"
-        :items="users"
-        item-value="id"
-        show-select
-        show-expand
-        item-selectable="editable"
+    <v-data-table
+      v-model="selected"
+      v-model:expanded="expanded"
+      class="rounded-2xl border border-gray-300"
+      :headers="headers"
+      :items="users"
+      item-value="id"
+      show-select
+      show-expand
+      item-selectable="editable"
+    >
+      <template #item.status="{ item }">
+        <v-chip :color="item.editable ? 'success' : 'warning'" size="small">
+          {{ item.editable ? '変更可能' : '権限なし' }}
+        </v-chip>
+      </template>
+
+      <template
+        #:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }"
       >
-        <template #item.status="{ item }">
-          <v-chip :color="item.editable ? 'success' : 'warning'" size="small">
-            {{ item.editable ? '変更可能' : '権限なし' }}
-          </v-chip>
-        </template>
+        <v-btn
+          :append-icon="
+            isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'
+          "
+          :text="isExpanded(internalItem) ? 'Collapse' : 'More info'"
+          class="text-none"
+          color="medium-emphasis"
+          size="small"
+          variant="text"
+          width="105"
+          border
+          slim
+          @click="toggleExpand(internalItem)"
+        ></v-btn>
+      </template>
 
-        <!-- <template
-          #:item.data-table-expand="{ internalItem, isExpanded, toggleExpand }"
-        >
-          <v-btn
-            :append-icon="
-              isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'
-            "
-            :text="isExpanded(internalItem) ? 'Collapse' : 'More info'"
-            class="text-none"
-            color="medium-emphasis"
-            size="small"
-            variant="text"
-            width="105"
-            border
-            slim
-            @click="toggleExpand(internalItem)"
-          ></v-btn>
-        </template> -->
+      <template #expanded-row="{ columns, item }">
+        <tr>
+          <td :colspan="1"></td>
+          <td :colspan="columns.length - 1">
+            <v-table class="no-row-lines" density="compact">
+              <tbody>
+                <tr v-for="s in item.services" :key="s.name">
+                  <td>{{ s.name }}</td>
+                  <td>{{ s.role }}</td>
+                </tr>
+              </tbody>
+            </v-table>
 
-        <template #expanded-row="{ columns, item }">
-          <tr>
-            <td :colspan="columns.length">
-              <v-card variant="text" class="my-2">
-                <v-table density="compact">
-                  <tbody>
-                    <tr v-for="s in item.services" :key="s.name">
-                      <td>{{ s.name }}</td>
-                      <td>{{ s.role }}</td>
-                    </tr>
-                  </tbody>
-                </v-table>
-
-                <v-alert
-                  v-if="!item.editable"
-                  type="warning"
-                  variant="tonal"
-                  class="mt-2"
+            <v-alert
+              v-if="!item.editable"
+              type="warning"
+              variant="tonal"
+              class="mt-2"
+            >
+              オーナーサービス「{{
+                ownerServiceName(item)
+              }}」が自分の管理下にないため、
+              このユーザーのオーダーは変更できません。
+              <div class="mt-2">
+                <v-btn
+                  size="small"
+                  variant="text"
+                  color="warning"
+                  prepend-icon="mdi-email-outline"
+                  @click="handleRequestPermission(item)"
                 >
-                  オーナーサービス「{{
-                    ownerServiceName(item)
-                  }}」が自分の管理下にないため、
-                  このユーザーのオーダーは変更できません。
-                  <div class="mt-2">
-                    <v-btn
-                      size="small"
-                      variant="text"
-                      color="warning"
-                      prepend-icon="mdi-email-outline"
-                      @click="handleRequestPermission(item)"
-                    >
-                      {{ ownerServiceName(item) }}の管理者に変更を依頼する
-                    </v-btn>
-                  </div>
-                </v-alert>
-                <p v-else class="text-caption text-medium-emphasis mt-2">
-                  ※
-                  オーダーを変更すると、上記の他サービスでの利用状況にも影響します
-                </p>
-              </v-card>
-            </td>
-          </tr>
-        </template>
-      </v-data-table>
-    </v-card>
+                  {{ ownerServiceName(item) }}の管理者に変更を依頼する
+                </v-btn>
+              </div>
+            </v-alert>
+          </td>
+        </tr>
+      </template>
+    </v-data-table>
 
     <div class="d-flex justify-space-between align-center mt-4 mb-8">
       <span

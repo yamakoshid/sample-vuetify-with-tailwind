@@ -22,8 +22,8 @@ const users = ref([
     ownerService: 'サービスA',
     editable: true,
     services: [
-      { name: 'サービスA', role: 'オーナー（本オーダー保有）', owner: true },
-      { name: 'サービスB', role: '利用のみ', owner: false },
+      { name: 'サービスA', role: 'サービス管理者', owner: true },
+      { name: 'サービスB', role: 'サービス利用者', owner: false },
       // サービスCは管理権限がないため含まれない
     ],
   },
@@ -34,7 +34,18 @@ const users = ref([
     ownerService: 'サービスC',
     editable: false,
     services: [
-      { name: 'サービスA', role: '利用のみ', owner: false },
+      { name: 'サービスA', role: 'サービス利用者', owner: false },
+      // オーナーであるサービスCは管理権限がないため含まれない
+    ],
+  },
+  {
+    id: 'u3',
+    name: '鈴木 二郎',
+    code: 'user_01043',
+    ownerService: 'サービスC',
+    editable: false,
+    services: [
+      { name: 'サービスA', role: 'サービス利用者', owner: false },
       // オーナーであるサービスCは管理権限がないため含まれない
     ],
   },
